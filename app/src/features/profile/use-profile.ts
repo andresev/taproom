@@ -8,6 +8,16 @@ const profileKey = (userId: string | undefined) => ['profile', userId] as const;
 /** Postgres unique_violation: another profile already has this display name. */
 const UNIQUE_VIOLATION = '23505';
 
+const PROFILE_COLUMNS = 'wallet_address, display_name, created_at';
+
+function toProfile(row: { wallet_address: unknown; display_name: unknown; created_at: unknown }): Profile {
+  return {
+    walletAddress: row.wallet_address as Address,
+    displayName: row.display_name as string | null,
+    createdAt: new Date(row.created_at as string),
+  };
+}
+
 /**
  * The signed-in user's profile. Resolves to null if the row does not exist,
  * which callers must treat as an error: the sign-in trigger should have created it.
@@ -19,16 +29,27 @@ export function useProfile(userId: string | undefined) {
     queryFn: async (): Promise<Profile | null> => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('wallet_address, display_name, created_at')
+        .select(PROFILE_COLUMNS)
         .eq('id', userId ?? '')
         .maybeSingle();
       if (error) throw error;
-      if (!data) return null;
-      return {
-        walletAddress: data.wallet_address as Address,
-        displayName: data.display_name as string | null,
-        createdAt: new Date(data.created_at as string),
-      };
+      return data ? toProfile(data) : null;
+    },
+  });
+}
+
+/** The profile keyed to a wallet, or null if that wallet has none. Public: works signed out. */
+export function useProfileByWallet(address: Address) {
+  return useQuery({
+    queryKey: ['profile-by-wallet', address],
+    queryFn: async (): Promise<Profile | null> => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(PROFILE_COLUMNS)
+        .eq('wallet_address', address)
+        .maybeSingle();
+      if (error) throw error;
+      return data ? toProfile(data) : null;
     },
   });
 }
@@ -44,6 +65,10 @@ export function useUpdateDisplayName(userId: string | undefined) {
       if (error?.code === UNIQUE_VIOLATION) throw new Error('That name is already taken.');
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: profileKey(userId) }),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: profileKey(userId) }),
+        queryClient.invalidateQueries({ queryKey: ['profile-by-wallet'] }),
+      ]),
   });
 }
