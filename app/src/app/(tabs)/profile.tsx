@@ -1,16 +1,21 @@
 import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { EmptyState } from '@/components/screen-states';
+import { LoadingState } from '@/components/screen-states';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { ConnectButton } from '@/features/profile/connect-button';
+import { ProfileCard } from '@/features/profile/profile-card';
+import { useSession } from '@/features/profile/use-session';
 import { Spacing } from '@/theme';
 
 export default function ProfileScreen() {
+  const { session, isLoading } = useSession();
+
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.container}>
-        <EmptyState title="Profile" message="Connect a wallet to create your profile." />
+        {isLoading ? <LoadingState /> : session ? <ProfileCard userId={session.user.id} /> : <ConnectButton />}
         <ThemedView style={styles.about}>
           <ThemedText type="smallBold">About</ThemedText>
           <ThemedText type="small" themeColor="textSecondary" style={styles.center}>

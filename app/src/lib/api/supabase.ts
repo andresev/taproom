@@ -7,7 +7,7 @@ import { AppState } from "react-native";
  * must be protected by Row Level Security. The service-role key lives on the
  * server and never ships in the bundle.
  *
- * Not imported by any screen yet; wired up with wallet connect + profiles (MVP step 1).
+ * Sessions come only from wallet sign-in (features/profile/use-wallet-sign-in).
  */
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
