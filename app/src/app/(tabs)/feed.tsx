@@ -1,10 +1,21 @@
-import { EmptyState } from '@/components/screen-states';
+import { StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { ThemedView } from '@/components/themed-view';
+import { FeedList } from '@/features/feed/feed-list';
 
 export default function FeedScreen() {
   return (
-    <EmptyState
-      title="Your feed is empty"
-      message="Buys, sells and launches from wallets you follow will show up here."
-    />
+    <ThemedView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <FeedList />
+      </SafeAreaView>
+    </ThemedView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

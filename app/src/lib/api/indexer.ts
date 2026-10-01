@@ -4,6 +4,19 @@
  */
 const baseUrl = process.env.EXPO_PUBLIC_INDEXER_URL;
 
+/** POST a JSON body to one of the indexer's own routes (indexer/src/api) and return its JSON. */
+export async function indexerPost<T>(path: `/${string}`, body: unknown): Promise<T> {
+  if (!baseUrl) throw new Error('Missing EXPO_PUBLIC_INDEXER_URL — see app/.env.example');
+
+  const res = await fetch(`${baseUrl}${path}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`Indexer request failed: ${res.status}`);
+  return (await res.json()) as T;
+}
+
 export async function indexerGraphql<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
   if (!baseUrl) throw new Error('Missing EXPO_PUBLIC_INDEXER_URL — see app/.env.example');
 

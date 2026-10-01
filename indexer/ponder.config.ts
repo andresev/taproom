@@ -1,18 +1,41 @@
-import { createConfig } from "ponder";
+import { ADDRESSES, BSC_CHAIN_ID } from "@repo/shared";
+import { createConfig, factory } from "ponder";
+import { getAbiItem } from "viem";
+
+import { brewFactoryAbi } from "./abis/brew-factory";
+import { pancakeV3PoolAbi } from "./abis/pancake-v3-pool";
 import { loadEnv } from "./src/env";
 
 const env = loadEnv();
+const startBlock = env.START_BLOCK ?? "latest";
 
 export default createConfig({
   database: env.DATABASE_URL
     ? { kind: "postgres", connectionString: env.DATABASE_URL }
     : { kind: "pglite" },
   chains: {
-    bsc: { id: 56, rpc: env.BSC_RPC_URL },
+    bsc: { id: BSC_CHAIN_ID, rpc: env.BSC_RPC_URL },
   },
-  // No contracts yet on purpose. The Brew launch factory address and launch event
-  // are unconfirmed (see CLAUDE.md "Open questions"), and PancakeSwap V3 pools are
-  // discovered from launches. Add them here, with ABIs in ./abis and the source
-  // tx linked in a comment, once confirmed. Never guess an address or ABI.
-  contracts: {},
+  // Only Brew's standard factory is indexed so far. The dividend and multi-pair
+  // factories are recorded in shared/src/addresses.ts and still to be added
+  // (docs/0004). Never register an address or ABI that is not confirmed there.
+  contracts: {
+    BrewFactory: {
+      chain: "bsc",
+      abi: brewFactoryAbi,
+      address: ADDRESSES.brewFactory,
+      startBlock,
+    },
+    // Every pool a launch creates, discovered from the launch event itself.
+    BrewPool: {
+      chain: "bsc",
+      abi: pancakeV3PoolAbi,
+      address: factory({
+        address: ADDRESSES.brewFactory,
+        event: getAbiItem({ abi: brewFactoryAbi, name: "TokenLaunched" }),
+        parameter: "pool",
+      }),
+      startBlock,
+    },
+  },
 });

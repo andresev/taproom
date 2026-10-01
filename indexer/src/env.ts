@@ -10,6 +10,11 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env) {
     BSC_RPC_URL: z.url(),
     /** Postgres connection string. Unset in development falls back to Ponder's embedded PGlite. */
     DATABASE_URL: z.url().optional(),
+    /**
+     * First block to index. Unset starts from the chain head, so nothing older is
+     * indexed; set it to the Brew factory's deployment block for the full history.
+     */
+    START_BLOCK: z.coerce.number().int().positive().optional(),
   });
 
   // `KEY=` in a .env file means "not set", not "set to empty string".

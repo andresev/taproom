@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatMultiple, formatTokenAmount, formatUsdCompact, shortAddress } from './format';
+import { formatMultiple, formatTimeAgo, formatTokenAmount, formatUsdCompact, shortAddress } from './format';
 
 describe('shortAddress', () => {
   it('shortens an address', () => {
@@ -48,5 +48,26 @@ describe('formatMultiple', () => {
     expect(formatMultiple(3.2)).toBe('3.2x');
     expect(formatMultiple(0.5)).toBe('0.5x');
     expect(formatMultiple(12.34)).toBe('12.3x');
+  });
+});
+
+describe('formatTimeAgo', () => {
+  const now = new Date('2026-10-01T12:00:00Z');
+  const ago = (seconds: number) => new Date(now.getTime() - seconds * 1000);
+
+  it('uses the largest whole unit', () => {
+    expect(formatTimeAgo(ago(2), now)).toBe('now');
+    expect(formatTimeAgo(ago(45), now)).toBe('45s');
+    expect(formatTimeAgo(ago(12 * 60 + 30), now)).toBe('12m');
+    expect(formatTimeAgo(ago(3 * 3600 + 59), now)).toBe('3h');
+    expect(formatTimeAgo(ago(5 * 86400), now)).toBe('5d');
+  });
+
+  it('treats a block time slightly ahead of the device clock as now', () => {
+    expect(formatTimeAgo(ago(-3), now)).toBe('now');
+  });
+
+  it('returns a dash for an invalid date', () => {
+    expect(formatTimeAgo(new Date(NaN), now)).toBe('—');
   });
 });

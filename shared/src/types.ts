@@ -20,20 +20,32 @@ export interface Token {
   totalSupply: bigint;
   /** Dev wallet: the wallet that launched the token. */
   deployer: Address;
-  /** The asset the token was brewed with (WBNB, $BREW, a memecoin or a bStock). */
-  pairToken: Address;
-  /** PancakeSwap V3 pool created at launch. */
-  pool: Address;
+  /** As emitted at launch: usually a data: URI holding JSON with a description and image. */
+  metadataUri: string | null;
   launchTxHash: TxHash;
   launchedAt: Date;
+}
+
+/** A PancakeSwap V3 pool created by a Brew launch. Multi-pair launches create several per token. */
+export interface Pool {
+  address: Address;
+  token: Address;
+  /** The asset the token was brewed with (WBNB, $BREW, a memecoin or a bStock). */
+  pairToken: Address;
+  pairSymbol: string | null;
+  pairDecimals: number;
+  /** Pool fee in hundredths of a basis point: 10000 is 1%. */
+  fee: number;
 }
 
 export interface Trade {
   /** With `logIndex`, the dedupe key: one transaction can contain several swaps. */
   txHash: TxHash;
   logIndex: number;
+  /** The wallet that sent the transaction. */
   wallet: Address;
   token: Address;
+  pool: Address;
   side: TradeSide;
   /** Integer base units of `token`. Never a float. */
   amountBaseUnits: bigint;

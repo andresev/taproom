@@ -65,3 +65,14 @@ export function formatMultiple(multiple: number): string {
   if (!Number.isFinite(multiple) || multiple < 0) return '—';
   return `${trimZeros(multiple.toFixed(multiple >= 10 ? 1 : 2))}x`;
 }
+
+/** How long ago a block time was, for feed rows: "now", "45s", "12m", "3h", "5d". */
+export function formatTimeAgo(time: Date, now: Date = new Date()): string {
+  const seconds = Math.floor((now.getTime() - time.getTime()) / 1000);
+  if (!Number.isFinite(seconds)) return '—';
+  if (seconds < 5) return 'now';
+  if (seconds < 60) return `${seconds}s`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
+  return `${Math.floor(seconds / 86400)}d`;
+}

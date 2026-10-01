@@ -14,6 +14,6 @@ describe('addresses', () => {
   });
 
   it('throws for an unconfirmed address instead of returning a placeholder', () => {
-    expect(() => requireAddress('brewFactory')).toThrow(/not confirmed/);
+    expect(() => requireAddress('pancakeV3SwapRouter')).toThrow(/not confirmed/);
   });
 });
