@@ -1,20 +1,21 @@
 {
-  "name": "social-trading",
+  "name": "taproom",
   "private": true,
   "version": "0.0.0",
   "workspaces": [
     "app",
-    "server",
+    "indexer",
     "shared"
   ],
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "dev:server": "npm run dev -w server",
     "dev:app": "npm run start -w app",
-    "build": "npm run build -w shared && npm run build -w server",
+    "dev:indexer": "npm run dev -w indexer",
+    "build": "npm run build -w shared",
     "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint -w app",
     "test": "npm run test --workspaces --if-present",
     "db:start": "supabase start",
     "db:stop": "supabase stop",

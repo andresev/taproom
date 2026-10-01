@@ -1,9 +1,8 @@
 /**
  * Token amounts are integer base units (bigint), never floats.
- * See DECISIONS.md: "Money math: integer base units only; no floats."
  *
- * Solana SPL tokens have 0–9 decimals in practice (SOL = 9, USDC = 6),
- * but these helpers accept any non-negative integer decimals.
+ * BEP-20 tokens are usually 18 decimals (BNB, most Brew tokens), but these
+ * helpers accept any non-negative integer decimals.
  */
 
 const DECIMAL_RE = /^(-)?(\d+)(?:\.(\d+))?$/;
@@ -15,7 +14,7 @@ function assertDecimals(decimals: number): void {
 }
 
 /**
- * Parse a human decimal string ("1.5") into base units (1500000000n for 9 decimals).
+ * Parse a human decimal string ("1.5") into base units (1500000n for 6 decimals).
  * Takes a string on purpose: a JS number has already lost precision.
  * Throws if the value has more fractional digits than the token supports.
  */

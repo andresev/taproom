@@ -16,5 +16,5 @@ jobs:
           cache: npm
       - run: npm ci          # also builds @repo/shared via its prepare script
       - run: npm run typecheck
+      - run: npm run lint
       - run: npm test
-      - run: npm run build

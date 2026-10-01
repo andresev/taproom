@@ -1,14 +1,15 @@
 {
   "expo": {
-    "name": "Social Trading",
-    "slug": "social-trading",
+    "name": "Taproom",
+    "slug": "taproom",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "socialtrading",
+    "scheme": "taproom",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.anonymous.social-trading"
     },
     "android": {
       "adaptiveIcon": {
@@ -25,6 +26,7 @@
     },
     "plugins": [
       "expo-router",
+      "./plugins/with-scene-lifecycle",
       [
         "expo-splash-screen",
         {

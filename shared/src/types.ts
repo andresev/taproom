@@ -1,40 +1,52 @@
 /**
- * Core domain types, mirroring the draft data model in SPEC.md.
- * The Postgres schema (supabase/migrations) is the source of truth once written;
- * keep these in sync with it.
+ * Core domain types shared by the app and the indexer.
+ * The indexer schema (indexer/ponder.schema.ts) is the source of truth for
+ * on-chain data; keep these in sync with it.
  */
 
-/** Base58 Solana address (wallet or mint). */
-export type SolanaAddress = string;
-/** Base58 transaction signature — the dedupe key and log correlation id. */
-export type TxSignature = string;
+/** EVM address (wallet, token or pool), lowercase hex. */
+export type Address = `0x${string}`;
+/** Transaction hash, lowercase hex. */
+export type TxHash = `0x${string}`;
 
 export type TradeSide = "buy" | "sell";
-export type WalletSource = "seeded" | "user";
-
-export interface Wallet {
-  address: SolanaAddress;
-  label: string | null;
-  source: WalletSource;
-  createdAt: Date;
-}
 
 export interface Token {
-  mint: SolanaAddress;
+  address: Address;
   symbol: string | null;
   name: string | null;
   decimals: number;
+  /** Integer base units. */
+  totalSupply: bigint;
+  /** Dev wallet: the wallet that launched the token. */
+  deployer: Address;
+  /** The asset the token was brewed with (WBNB, $BREW, a memecoin or a bStock). */
+  pairToken: Address;
+  /** PancakeSwap V3 pool created at launch. */
+  pool: Address;
+  launchTxHash: TxHash;
+  launchedAt: Date;
 }
 
 export interface Trade {
-  signature: TxSignature;
-  wallet: SolanaAddress;
-  token: SolanaAddress;
+  /** With `logIndex`, the dedupe key: one transaction can contain several swaps. */
+  txHash: TxHash;
+  logIndex: number;
+  wallet: Address;
+  token: Address;
   side: TradeSide;
   /** Integer base units of `token`. Never a float. */
   amountBaseUnits: bigint;
-  /** USD figures are display/PnL values from the price API, stored as decimal strings. */
-  usdValue: string;
-  priceUsd: string;
+  /** What was paid (buy) or received (sell). */
+  pairToken: Address;
+  /** Integer base units of `pairToken`. */
+  pairAmountBaseUnits: bigint;
+  blockNumber: bigint;
   blockTime: Date;
+}
+
+export interface Profile {
+  walletAddress: Address;
+  displayName: string | null;
+  createdAt: Date;
 }
