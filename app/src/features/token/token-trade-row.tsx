@@ -43,6 +43,11 @@ export function TokenTradeRow({ trade, tokenSymbol, tokenDecimals }: Props) {
         {formatTokenAmount(trade.pairAmountBaseUnits, trade.pairDecimals)}
         {pair}
       </ThemedText>
+      {trade.side === 'buy' ? (
+        <Link href={{ pathname: '/receipt/[id]', params: { id: trade.id } }}>
+          <ThemedText type="linkPrimary">Receipt</ThemedText>
+        </Link>
+      ) : null}
     </View>
   );
 }

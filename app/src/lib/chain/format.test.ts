@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatMultiple, formatPoolFee, formatPrice, formatTimeAgo, formatTokenAmount, formatUsdCompact, shortAddress } from './format';
+import { formatMultiple, formatPoolFee, formatPrice, formatTimeAgo, formatUtcDateTime, formatTokenAmount, formatUsdCompact, shortAddress } from './format';
 
 describe('shortAddress', () => {
   it('shortens an address', () => {
@@ -86,6 +86,16 @@ describe('formatPoolFee', () => {
   it('returns a dash for a value that is not a fee', () => {
     expect(formatPoolFee(-1)).toBe('—');
     expect(formatPoolFee(1.5)).toBe('—');
+  });
+});
+
+describe('formatUtcDateTime', () => {
+  it('prints the block time in UTC to the minute', () => {
+    expect(formatUtcDateTime(new Date(1790971265 * 1000))).toBe('2026-10-02 20:01 UTC');
+  });
+
+  it('returns a dash for an invalid date', () => {
+    expect(formatUtcDateTime(new Date(NaN))).toBe('—');
   });
 });
 

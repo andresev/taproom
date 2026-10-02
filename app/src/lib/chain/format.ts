@@ -90,6 +90,12 @@ export function formatPoolFee(fee: number): string {
   return `${trimZeros((fee / 10_000).toFixed(4))}%`;
 }
 
+/** A block time as an unambiguous UTC timestamp for receipts: "2026-10-02 20:01 UTC". */
+export function formatUtcDateTime(time: Date): string {
+  if (Number.isNaN(time.getTime())) return '—';
+  return `${time.toISOString().slice(0, 16).replace('T', ' ')} UTC`;
+}
+
 /** How long ago a block time was, for feed rows: "now", "45s", "12m", "3h", "5d". */
 export function formatTimeAgo(time: Date, now: Date = new Date()): string {
   const seconds = Math.floor((now.getTime() - time.getTime()) / 1000);
