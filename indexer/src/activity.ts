@@ -11,12 +11,15 @@ const address = z
 /**
  * Body of POST /activity: per-token trading totals since a unix time.
  * `wallets` limits the totals to trades and launches by those wallets (the
- * signed-in feed); omitted, every wallet counts.
+ * signed-in feed); omitted, every wallet counts. `token` narrows the result to
+ * a single token.
  */
 export const activityRequestSchema = z.object({
   since: z.number().int().nonnegative(),
   sort: z.enum(["trending", "latest", "launches"]),
   wallets: z.array(address).min(1).max(500).optional(),
+  /** Limits the result to this one token (the token page). */
+  token: address.optional(),
 });
 
 export type ActivityRequest = z.infer<typeof activityRequestSchema>;

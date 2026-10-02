@@ -25,8 +25,8 @@ export default function RootLayout() {
           <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
             <Stack>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="token/[address]" options={{ title: 'Token' }} />
-              <Stack.Screen name="wallet/[address]" options={{ title: 'Wallet' }} />
+              <Stack.Screen name="token/[address]" options={{ title: 'Token', headerBackTitle: 'Back' }} />
+              <Stack.Screen name="wallet/[address]" options={{ title: 'Wallet', headerBackTitle: 'Back' }} />
             </Stack>
             <WalletSessionGuard />
             {/* Reown: with Expo Router the modal needs an absolutely positioned wrapper on Android. */}

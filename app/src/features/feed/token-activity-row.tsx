@@ -3,10 +3,10 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
-import { formatTimeAgo, formatTokenAmount, shortAddress } from '@/lib/chain/format';
+import { formatTimeAgo, shortAddress } from '@/lib/chain/format';
 import { Spacing } from '@/theme';
 
-import { ActivityBar } from './activity-bar';
+import { ActivityTotals } from './activity-totals';
 import type { TokenActivity } from './types';
 
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`;
@@ -36,9 +36,7 @@ type Props = {
 /** One token's recent activity as a single row with a buy/sell bar; opens the token page. */
 export function TokenActivityRow({ activity, names }: Props) {
   const theme = useTheme();
-  const { volume, buyShare } = activity;
   const symbol = activity.tokenSymbol ?? shortAddress(activity.tokenAddress);
-  const pair = volume?.pairSymbol ? ` ${volume.pairSymbol}` : '';
 
   return (
     <Link href={{ pathname: '/token/[address]', params: { address: activity.tokenAddress } }} asChild>
@@ -60,25 +58,7 @@ export function TokenActivityRow({ activity, names }: Props) {
               </ThemedText>
             </View>
 
-            {buyShare === null ? (
-              <ThemedText type="small" themeColor="textSecondary">
-                No trades yet
-              </ThemedText>
-            ) : (
-              <>
-                <ActivityBar buyShare={buyShare} />
-                <View style={styles.totals}>
-                  <ThemedText type="small" style={{ color: theme.buy }}>
-                    {plural(activity.buys, 'buy')}
-                    {volume ? ` · ${formatTokenAmount(volume.bought, volume.pairDecimals)}${pair}` : ''}
-                  </ThemedText>
-                  <ThemedText type="small" style={{ color: theme.sell }}>
-                    {plural(activity.sells, 'sell')}
-                    {volume ? ` · ${formatTokenAmount(volume.sold, volume.pairDecimals)}${pair}` : ''}
-                  </ThemedText>
-                </View>
-              </>
-            )}
+            <ActivityTotals activity={activity} />
 
             <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
               {activity.launch ? `${launchedAgo(activity.launch.time)} · ` : ''}
@@ -102,13 +82,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: Spacing.two,
-  },
-  // Long amounts wrap the sell total onto its own line instead of running off the card.
-  totals: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    columnGap: Spacing.three,
   },
   grow: {
     flexShrink: 1,

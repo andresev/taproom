@@ -21,7 +21,7 @@ app.post("/activity", async (c) => {
   if (!parsed.success) {
     return c.json({ error: "Invalid request", fields: parsed.error.issues.map((issue) => issue.path.join(".")) }, 400);
   }
-  const { sort, wallets } = parsed.data;
+  const { sort, wallets, token: onlyToken } = parsed.data;
   const since = BigInt(parsed.data.since);
 
   const totals = db
@@ -46,7 +46,13 @@ app.post("/activity", async (c) => {
       lastTradeAt: sql<string>`max(${trade.blockTime})`.as("last_trade_at"),
     })
     .from(trade)
-    .where(and(gte(trade.blockTime, since), wallets ? inArray(trade.wallet, wallets) : undefined))
+    .where(
+      and(
+        gte(trade.blockTime, since),
+        wallets ? inArray(trade.wallet, wallets) : undefined,
+        onlyToken ? eq(trade.token, onlyToken) : undefined,
+      ),
+    )
     .groupBy(trade.token)
     .as("totals");
 
@@ -80,9 +86,12 @@ app.post("/activity", async (c) => {
     .leftJoin(totals, eq(totals.token, token.address))
     .leftJoin(pool, eq(pool.address, totals.anyPool))
     .where(
-      sort === "launches"
-        ? and(gte(token.launchedAt, since), or(hasTrades, launchedInWindow))
-        : or(hasTrades, launchedInWindow),
+      and(
+        onlyToken ? eq(token.address, onlyToken) : undefined,
+        sort === "launches"
+          ? and(gte(token.launchedAt, since), or(hasTrades, launchedInWindow))
+          : or(hasTrades, launchedInWindow),
+      ),
     )
     .orderBy(
       ...(sort === "trending"
@@ -121,6 +130,7 @@ app.post("/activity", async (c) => {
       sort,
       since: parsed.data.since,
       wallets: wallets?.length ?? null,
+      token: onlyToken ?? null,
       rows: items.length,
       ms: Date.now() - started,
     }),

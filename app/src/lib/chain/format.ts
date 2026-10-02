@@ -66,6 +66,12 @@ export function formatMultiple(multiple: number): string {
   return `${trimZeros(multiple.toFixed(multiple >= 10 ? 1 : 2))}x`;
 }
 
+/** A V3 pool fee, in hundredths of a basis point, as a percentage: 10000 is "1%", 2500 is "0.25%". */
+export function formatPoolFee(fee: number): string {
+  if (!Number.isInteger(fee) || fee < 0) return '—';
+  return `${trimZeros((fee / 10_000).toFixed(4))}%`;
+}
+
 /** How long ago a block time was, for feed rows: "now", "45s", "12m", "3h", "5d". */
 export function formatTimeAgo(time: Date, now: Date = new Date()): string {
   const seconds = Math.floor((now.getTime() - time.getTime()) / 1000);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatMultiple, formatTimeAgo, formatTokenAmount, formatUsdCompact, shortAddress } from './format';
+import { formatMultiple, formatPoolFee, formatTimeAgo, formatTokenAmount, formatUsdCompact, shortAddress } from './format';
 
 describe('shortAddress', () => {
   it('shortens an address', () => {
@@ -48,6 +48,20 @@ describe('formatMultiple', () => {
     expect(formatMultiple(3.2)).toBe('3.2x');
     expect(formatMultiple(0.5)).toBe('0.5x');
     expect(formatMultiple(12.34)).toBe('12.3x');
+  });
+});
+
+describe('formatPoolFee', () => {
+  it('reads hundredths of a basis point as a percentage', () => {
+    expect(formatPoolFee(10000)).toBe('1%');
+    expect(formatPoolFee(2500)).toBe('0.25%');
+    expect(formatPoolFee(100)).toBe('0.01%');
+    expect(formatPoolFee(0)).toBe('0%');
+  });
+
+  it('returns a dash for a value that is not a fee', () => {
+    expect(formatPoolFee(-1)).toBe('—');
+    expect(formatPoolFee(1.5)).toBe('—');
   });
 });
 

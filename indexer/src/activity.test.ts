@@ -16,6 +16,12 @@ describe("activityRequestSchema", () => {
     expect(parsed.wallets).toEqual([wallet.toLowerCase()]);
   });
 
+  it("accepts and lowercases a single-token filter", () => {
+    const parsed = activityRequestSchema.parse({ since: 0, sort: "latest", token: wallet });
+    expect(parsed.token).toBe(wallet.toLowerCase());
+    expect(activityRequestSchema.safeParse({ since: 0, sort: "latest", token: "SOON" }).success).toBe(false);
+  });
+
   it("rejects malformed input", () => {
     const bad = [
       { since: -1, sort: "trending" },
