@@ -8,3 +8,9 @@ export const erc20MetadataAbi = parseAbi([
   "function decimals() view returns (uint8)",
   "function symbol() view returns (string)",
 ]);
+
+/** What the sell simulation needs from a token: approve the router, read a balance. */
+export const erc20TradeAbi = parseAbi([
+  "function approve(address spender, uint256 amount) returns (bool)",
+  "function balanceOf(address account) view returns (uint256)",
+]);

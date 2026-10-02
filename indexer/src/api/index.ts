@@ -4,6 +4,8 @@ import { db } from "ponder:api";
 import schema from "ponder:schema";
 
 import { ACTIVITY_LIMIT, activityRequestSchema, type ActivityRow } from "../activity";
+import { safetyRequestSchema, type SafetyFacts } from "../safety";
+import { gatherSafetyFacts } from "./safety-facts";
 
 const { pool, token, trade } = schema;
 const app = new Hono();
@@ -136,6 +138,40 @@ app.post("/activity", async (c) => {
     }),
   );
   return c.json({ items });
+});
+
+/** How long one token's facts are reused. The simulation is the costly part. */
+const SAFETY_CACHE_MS = 60_000;
+const safetyCache = new Map<string, { at: number; facts: SafetyFacts }>();
+
+/**
+ * The facts behind a token's safety score: dev-wallet trades, a bytecode scan, a
+ * simulated buy and sell, and trade concentration. Facts only; the app's pure
+ * rules turn them into Safe, Caution or Danger with reasons.
+ */
+app.post("/safety", async (c) => {
+  const started = Date.now();
+  const parsed = safetyRequestSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "Invalid request" }, 400);
+  const { token: tokenAddress } = parsed.data;
+
+  const cached = safetyCache.get(tokenAddress);
+  if (cached && started - cached.at < SAFETY_CACHE_MS) return c.json(cached.facts);
+
+  const facts = await gatherSafetyFacts(tokenAddress);
+  if (!facts) return c.json({ error: "Token not indexed" }, 404);
+  safetyCache.set(tokenAddress, { at: started, facts });
+
+  console.log(
+    JSON.stringify({
+      service: "indexer",
+      event: "safety",
+      token: tokenAddress,
+      sellSimulation: facts.sellSimulation?.outcome ?? null,
+      ms: Date.now() - started,
+    }),
+  );
+  return c.json(facts);
 });
 
 export default app;

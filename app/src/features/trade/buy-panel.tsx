@@ -7,7 +7,8 @@ import { Chip } from '@/components/chip';
 import { ExternalLink } from '@/components/external-link';
 import { ThemedText } from '@/components/themed-text';
 import { SafetyBadge } from '@/features/safety/safety-badge';
-import { scoreToken } from '@/features/safety/score';
+import { useSafety } from '@/features/safety/use-safety';
+import { BURN_ADDRESS, topTenShare } from '@/features/token/holders';
 import type { TokenDetails } from '@/features/token/types';
 import { useTokenMarket } from '@/features/token/use-token-market';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
@@ -62,8 +63,15 @@ export function BuyPanel({ token }: { token: TokenDetails }) {
   const quote = useBuyQuote({ token: token.address, fee: pool?.fee ?? 0, amountIn: pool ? amountIn : null });
   const buy = useBuy();
 
-  // Step 6 has not built the checks yet, so every input is Unknown, which scores as Caution, never Safe.
-  const safety = scoreToken([]);
+  const holderShare =
+    token.holderCount === null
+      ? null
+      : topTenShare(
+          token.largestHolders,
+          [...token.pools.map((item) => item.address), BURN_ADDRESS],
+          market.data?.totalSupply ?? token.totalSupply,
+        );
+  const safety = useSafety(token.address, holderShare);
 
   if (!pool || pool.pairToken !== ADDRESSES.wbnb) {
     return (
@@ -135,14 +143,15 @@ export function BuyPanel({ token }: { token: TokenDetails }) {
         <Row label="Minimum received" value={minimum} />
         <Row label="Slippage" value={formatSlippage(slippageBps)} />
         {warnings}
-        <SafetyBadge score={safety} note="Safety checks are not built yet, so every input is Unknown." />
+        <SafetyBadge score={safety.score} />
         <Button
           label={`Confirm: buy ${symbol} for ${pay}`}
           onPress={() =>
             buy.mutate({ token: token.address, fee: pool.fee, amountIn, amountOutMinimum: minOut })
           }
           loading={buy.isPending}
-          disabled={wallet === null || insufficient}
+          // The safety status must be on screen before anything can be sent.
+          disabled={wallet === null || insufficient || safety.score === null}
         />
         <Button label="Back" onPress={() => setReviewing(false)} disabled={buy.isPending} />
         {buy.isError ? (
