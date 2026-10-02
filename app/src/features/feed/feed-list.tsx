@@ -81,11 +81,7 @@ export function FeedList() {
         <FeedFilterBar scope="Brew" />
         <FeedItems
           feed={everyone}
-          hint={
-            session
-              ? 'Follow wallets on Discover to see only their activity here.'
-              : 'Sign in on the Profile tab and follow wallets to see only their activity here.'
-          }
+          hint="Follow wallets on Discover to see only their activity here."
           emptyTitle="Nothing indexed yet"
           emptyMessage="No Brew launches or trades have been indexed in this window."
         />

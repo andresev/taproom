@@ -13,14 +13,14 @@ import { Spacing } from '@/theme';
 
 import { DISPLAY_NAME_MAX, displayNameProblem } from './display-name';
 import { useProfile, useUpdateDisplayName } from './use-profile';
-import { useWalletSignOut } from './use-wallet-sign-in';
+import { useSignOut } from './use-sign-out';
 
 /** The signed-in half of the Profile screen: wallet, display name, sign out. */
 export function ProfileCard({ userId }: { userId: string }) {
   const theme = useTheme();
   const profile = useProfile(userId);
   const updateName = useUpdateDisplayName(userId);
-  const signOut = useWalletSignOut();
+  const signOut = useSignOut();
   // null until the user edits, so the field follows the saved name.
   const [draft, setDraft] = useState<string | null>(null);
 
@@ -31,7 +31,7 @@ export function ProfileCard({ userId }: { userId: string }) {
   if (profile.data === null) {
     return (
       <ThemedView style={styles.container}>
-        <EmptyState title="No profile yet" message="This wallet is signed in but has no profile." />
+        <EmptyState title="No profile yet" message="You are signed in but have no profile." />
         <Button label="Sign out" onPress={() => signOut.mutate()} loading={signOut.isPending} />
       </ThemedView>
     );

@@ -6,7 +6,9 @@ This file is loaded at the start of every Claude Code session. Read it fully bef
 
 **Taproom** is a social trading app for the **Brew** token launchpad (brew.family) on **BNB Smart Chain (BSC)**.
 
-Core loop: open the app → see a live feed of what the wallets you follow are buying and launching on Brew → tap any trade → buy the same token in one tap from your own wallet, with a safety badge shown before you confirm.
+Core loop: open the app → see a live feed of what the wallets you follow are buying and launching on Brew → tap any trade → buy the same token in one tap from your in-app wallet, with a safety badge shown before you confirm.
+
+The wallet and trading experience is modelled on the Fomo app: sign in with Google or Apple, get a self-custodial wallet inside the app, and trade without leaving it. See "Wallet model" below and `docs/0007-embedded-wallet.md`.
 
 Taproom is an **independent, community-built app. It is not affiliated with or endorsed by Brew.** Never use Brew's logo or imply official status in UI, copy, or metadata.
 
@@ -23,16 +25,16 @@ Taproom is an **independent, community-built app. It is not affiliated with or e
 
 Build these, in this order:
 
-1. **Wallet connect + profile** — connect a wallet, create a profile keyed to the wallet address.
+1. **Sign in + wallet + profile** — the app opens on a sign-in screen offering Google and Apple, and nothing else is reachable until the user signs in; an embedded self-custodial wallet is created for the user; the profile is keyed to that wallet's address.
 2. **Follow graph** — follow/unfollow any wallet; search by address or profile name.
 3. **Live trade feed** — buys, sells, and launches from followed wallets on Brew tokens, newest first, near-real-time.
 4. **Token page** — price, market cap, liquidity, holders, recent trades, safety badge.
-5. **One-tap buy** — swap via PancakeSwap V3 from the user's own wallet, with slippage control and a safety check before signing.
+5. **One-tap buy** — swap via PancakeSwap V3 from the user's embedded wallet, inside the app, with slippage control and a safety check before the user confirms.
 6. **Safety badges** — a score plus plain-language reasons on every token (see Safety model).
 7. **Receipt cards** — shareable image proving an on-chain entry (see Receipts).
 
 ### Out of scope for v1 (v2+)
-Leaderboard seasons, token-gated holder chat rooms, in-app token launching ("Snap & Launch"), monthly Wrapped cards, push alerts on dev-wallet moves, PnL/tax exports, Chinese-language support, the Taproom token itself. Don't build these unless asked; do keep the data model friendly to them.
+Leaderboard seasons, token-gated holder chat rooms, in-app token launching ("Snap & Launch"), monthly Wrapped cards, push alerts on dev-wallet moves, PnL/tax exports, Chinese-language support, the Taproom token itself. Also v2+, although Fomo has them: funding the wallet with Apple Pay or a card, Taproom paying network fees for users, a per-trade fee, and chains other than BSC. Don't build these unless asked; do keep the data model friendly to them.
 
 ## Stack (defaults — change only with a stated reason)
 
@@ -40,7 +42,7 @@ Check `package.json` first. If the repo already uses a library for a job, follow
 
 - **App:** Expo (React Native) + **Expo Router**, **TypeScript strict**.
 - **Native deps:** install with `npx expo install <pkg>` so versions match the Expo SDK. **Do not upgrade the Expo SDK** without asking.
-- **Wallet:** Reown AppKit (WalletConnect) for React Native, with **wagmi + viem**. Check current Reown docs for setup; don't rely on memory.
+- **Wallet:** an embedded self-custodial wallet from **Privy** (the provider Fomo uses), with **viem**. Check current Privy docs for Expo setup and BSC support; don't rely on memory. The earlier Reown AppKit (WalletConnect) flow has been removed from the app's code; its packages remain installed until the external-wallet question below is settled.
 - **Server data:** TanStack Query. **Client state:** Zustand. Keep both thin.
 - **Styling:** follow the existing setup; if none, NativeWind.
 - **Indexer:** separate TypeScript service in `/indexer` (Ponder recommended), writing to Postgres. Indexes Brew launches and PancakeSwap V3 swaps for Brew tokens on BSC.
@@ -80,6 +82,16 @@ docs/                     # decisions (ADR-style), scoring notes
 
 Screens in `app/src/app/` compose feature components. Business logic lives in `app/src/features/*`; chain code lives in `app/src/lib/chain`. Paths like `src/features/safety` elsewhere in this file are relative to `app/`.
 
+## Wallet model
+
+Modelled on the Fomo app. Signed off by the project owner on 2026-10-02; this replaces the earlier "all signing happens in the user's own external wallet" rule.
+
+- **Sign-in:** Google or Apple only. No email-and-code sign-in, no external wallet connection, no seed phrase at sign-up. The app opens on the sign-in screen and the rest of it is behind that.
+- **Wallet:** created for the user by the wallet provider when they first sign in. It is self-custodial: the key is split by the provider so that neither Taproom nor the provider alone can move funds.
+- **Trading:** the user confirms a trade inside the app and the embedded wallet signs it. There is no hop to a separate wallet app.
+- **Profile:** keyed to the embedded wallet's address, so follows, the feed and receipts work as before.
+- **Leaving:** the user can export their key and take the wallet elsewhere.
+
 ## Safety model
 
 Every token shows a score (Safe / Caution / Danger) **and the reasons**. Never show a score without its reasons.
@@ -103,20 +115,24 @@ A receipt card proves an on-chain entry: token, entry tx hash, timestamp, market
 ## Hard rules
 
 **Custody and security**
-- The app never sees, stores, or transmits private keys or seed phrases. All signing happens in the user's wallet.
+- The wallet is self-custodial and embedded. Key material is handled only by the wallet provider's SDK. Taproom's own code, servers, logs and telemetry never read, store or transmit a private key, seed phrase or key share.
+- Nothing is signed without an explicit user confirmation in the app for that specific action. No background signing, no server-side signing, and no delegated or session signing without explicit sign-off.
+- The user can always export their key.
 - No secrets in the repo. Only public values go in `EXPO_PUBLIC_*` env vars. RPC provider keys, Supabase service keys, and similar live server-side only.
-- Every swap shows token, amount, minimum received, slippage, and safety score before the user signs.
+- Every swap shows token, amount, minimum received, slippage, and safety score before the user confirms.
 - Default slippage is conservative. Warn loudly above 5%, and never auto-raise slippage to force a trade through.
 
 **Legal and product lines (do not cross without explicit sign-off)**
 - No revenue sharing, yield, or dividends to token holders.
 - No wagering where anyone wins money from another user.
-- No custody of user funds, no pooled funds, no "managed" baskets.
+- No custody of user funds, no pooled funds, no "managed" baskets. The embedded wallet is the user's own: Taproom must never be able to move funds without the user.
 - No language that reads as investment advice ("guaranteed," "can't lose," "next 100x").
 - Show "Not affiliated with Brew" in the About/settings screen.
 
 ## Open questions (flag, don't decide silently)
-- **App store policy:** Apple and Google have specific rules for apps that facilitate crypto trading, and in-app swaps may trigger review issues. Raise this before building the swap flow into a release build; a possible fallback is to hand off to the user's wallet app or a web flow for the swap step.
+- **App store policy:** decided to trade inside the app, as Fomo does. Apple and Google still have specific rules for apps that facilitate crypto trading; check the current guidelines before the first release build.
+- **External wallets:** whether connecting an existing wallet comes back as an option beside the embedded wallet. If not, uninstall the Reown and wagmi packages.
+- **Fomo features not yet decided:** Apple Pay or card funding (needs a payment provider and its compliance terms), Taproom paying network fees, and charging a per-trade fee. Each needs its own sign-off.
 - Brew factory address and launch event signature (see TODO above).
 - Taproom token: name, ticker, and mechanics are not final. Planned direction: holding unlocks pro features; in-app launch fees paid in the token are burned; season rewards are cosmetics or fee discounts. Do not build token features in v1.
 

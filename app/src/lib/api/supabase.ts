@@ -7,7 +7,8 @@ import { AppState } from "react-native";
  * must be protected by Row Level Security. The service-role key lives on the
  * server and never ships in the bundle.
  *
- * Sessions come only from wallet sign-in (features/profile/use-wallet-sign-in).
+ * Sessions come from the `privy-session` function after a Privy sign-in
+ * (features/profile/use-auth-bridge).
  */
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;

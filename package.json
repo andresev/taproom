@@ -16,11 +16,12 @@
     "build": "npm run build -w shared",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint -w app",
-    "test": "npm run test --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present && npm run test:functions",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
-    "db:migration": "supabase migration new"
+    "db:migration": "supabase migration new",
+    "test:functions": "vitest run --dir supabase/functions"
   },
   "devDependencies": {
     "supabase": "^2.118.0",
