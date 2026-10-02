@@ -1,7 +1,6 @@
 import { Link } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { Button } from '@/components/button';
 import { ExternalLink } from '@/components/external-link';
 import { ThemedText } from '@/components/themed-text';
 import { bscscanTokenUrl, bscscanTxUrl } from '@/lib/chain/explorer';
@@ -63,9 +62,6 @@ export function TokenHeader({ token }: { token: TokenDetails }) {
           </ThemedText>
         </Fact>
       ))}
-
-      {/* The swap flow, with its safety check before signing, is MVP step 5. */}
-      <Button label="Buy (coming soon)" onPress={() => {}} disabled />
     </View>
   );
 }

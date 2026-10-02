@@ -13,7 +13,9 @@ describe('addresses', () => {
     expect(requireAddress('brewToken')).toBe(ADDRESSES.brewToken);
   });
 
-  it('throws for an unconfirmed address instead of returning a placeholder', () => {
-    expect(() => requireAddress('pancakeV3SwapRouter')).toThrow(/not confirmed/);
+  it('has every address the swap flow needs confirmed', () => {
+    for (const name of ['pancakeV3SwapRouter', 'pancakeV3Quoter', 'wbnb'] as const) {
+      expect(requireAddress(name)).toBe(ADDRESSES[name]);
+    }
   });
 });

@@ -35,10 +35,13 @@ export const ADDRESSES = {
    */
   pancakeV3Factory: "0x0bfbcf9fa4f9c56b0f40a671ad40e0805a091865",
   /**
-   * TODO: which router the swap flow uses (PancakeSwap's V3 SwapRouter or its
-   * Smart Router, which Brew's own site uses) is decided with MVP step 5.
+   * PancakeSwap V3 SwapRouter, from the PancakeSwap address page above. Chosen
+   * over the Smart Router that Brew's site uses because its source is published
+   * (pancake-v3-contracts, v3-periphery/SwapRouter.sol) and its swap takes a
+   * deadline. Checked on-chain: `factory()` and `WETH9()` return the factory and
+   * WBNB recorded here, and a simulated buy returned exactly the quoter's amount.
    */
-  pancakeV3SwapRouter: null,
+  pancakeV3SwapRouter: "0x1b81d678ffb9c0263b24a97847620c99d213eb14",
   /** PancakeSwap QuoterV2, from the PancakeSwap address page above. Has code on-chain. */
   pancakeV3Quoter: "0xb048bbc1ee6b733fffcfb9e9cef7375518e25997",
   /** WBNB, from Brew's bundle. Has code on-chain. */

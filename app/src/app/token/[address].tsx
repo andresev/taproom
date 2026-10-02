@@ -9,6 +9,7 @@ import { TokenHeader } from '@/features/token/token-header';
 import { TokenStats } from '@/features/token/token-stats';
 import { TokenTradeRow } from '@/features/token/token-trade-row';
 import { useToken } from '@/features/token/use-token';
+import { BuyPanel } from '@/features/trade/buy-panel';
 import { normalizeAddress } from '@/lib/chain/address';
 import { shortAddress } from '@/lib/chain/format';
 import { Spacing } from '@/theme';
@@ -44,6 +45,7 @@ function TokenPage({ address }: { address: Address }) {
         ListHeaderComponent={
           <View style={styles.header}>
             <TokenHeader token={details} />
+            <BuyPanel token={details} />
             <TokenStats token={details} />
             <TokenActivity address={details.address} />
             <ThemedText type="smallBold">Recent trades</ThemedText>
