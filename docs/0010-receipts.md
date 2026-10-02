@@ -42,3 +42,9 @@ users can never enter or edit its numbers.
   and no multiple.
 - Receipts are reached from a buy's "Receipt" link in a token's recent trades.
   There is no list of a user's own receipts yet.
+
+## Since then
+
+- 2026-10-02: 0011 requires a public link, with a QR code on the card, that
+  re-renders the receipt from indexed data, because a shared image can be edited.
+  It also asks for the list of a user's own receipts. Neither is built (MVP step 10).

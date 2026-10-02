@@ -34,3 +34,9 @@ nothing about prices, reserves or balances.
   before the indexed history, or through a factory that is not indexed.
 - Trades are attributed to the transaction sender, as in the feed (0004).
 - The trade list has no paging beyond the newest 30.
+
+## Since then
+
+- 2026-10-02: price, market cap, liquidity and holders arrived in 0006, the buy flow
+  in 0008 and the safety badge in 0009. The page now has all three, and each buy in
+  the trade list links to its receipt (0010).

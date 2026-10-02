@@ -28,3 +28,10 @@ The `follows` table and its row-level security came with the first migration.
 - Name search has no index behind it (`ilike` cannot use the uniqueness index). Add
   a trigram index when the profiles table is large enough to need one.
 - There is no "followers" list, only the count.
+
+## Since then
+
+- 2026-10-02: sign-in moved to an embedded wallet (0007). The follow graph and
+  search are unchanged.
+- 2026-10-02: 0011 leaves open how users find wallets to follow. Discover is still
+  search only, and the wallet screen has no trader record yet (MVP step 9).

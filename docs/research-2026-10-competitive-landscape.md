@@ -1,6 +1,7 @@
 # Research: competitive landscape and what makes Taproom different
 
-Date: 2026-10-02. Status: findings for review. Nothing here is a decision yet.
+Date: 2026-10-02. Status: adopted in 0011 the same day. Written as findings for
+review; the text below is as written then, except where "Since then" says otherwise.
 
 Method: web search and public pages only. Brew's own site and docs render in the
 browser and returned no content to the fetch tool, so every Brew fact below comes
@@ -120,9 +121,21 @@ What this means:
 ## Not verified
 
 - Whether Fomo, GMGN or Axiom label or filter Brew launches as a category.
-- Brew's factory address, launch event and locker contract. Still unconfirmed.
+- Brew's locker contract, and the standard factory's deployment block. (Corrected:
+  this item first listed the factory address and launch event too, which 0004 had
+  already confirmed.)
 - Brew's own roadmap, and whether it plans profiles or a feed.
 - MoonRush details. Its press release would not load.
+
+## Since then
+
+- 2026-10-02: the proposals in section 5 were adopted in 0011, with one change to
+  item 3 recorded there.
+- 2026-10-02: Brew's site and its published analytics were read directly for 0011.
+  The site has no profiles, follow graph, feed, leaderboard or mobile app, and it
+  ships Chinese and Japanese translations. Its roadmap is still unknown.
+- 2026-10-02: the launch counts in section 1 can be replaced by the on-chain count
+  in 0004: 3,225 across the five factories on 2026-10-01.
 
 ## Sources
 

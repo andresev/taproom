@@ -81,3 +81,12 @@ launched token of one pool and the pair token of another.
 - Whether Taproom shows tokens from Brew's dividend factory, given the "no dividends
   to token holders" rule in CLAUDE.md is about Taproom's own offering.
 - Which PancakeSwap router the swap flow uses (step 5).
+
+## Since then
+
+- 2026-10-02: holder balances from `Transfer` events and the pool price on each
+  trade were added (0006), then the `/safety` route (0009).
+- 2026-10-02: the router question was settled in 0008: PancakeSwap's V3 SwapRouter.
+- 2026-10-02: 0011 makes history and factory coverage the next work (MVP step 8),
+  ahead of new app features. The standard factory's deployment block is still
+  unconfirmed, and the dividend-factory question is still open.

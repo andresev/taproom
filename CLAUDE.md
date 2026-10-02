@@ -10,31 +10,72 @@ Core loop: open the app → see a live feed of what the wallets you follow are b
 
 The wallet and trading experience is modelled on the Fomo app: sign in with Google or Apple, get a self-custodial wallet inside the app, and trade without leaving it. See "Wallet model" below and `docs/0007-embedded-wallet.md`.
 
+That loop is not what makes Taproom different: larger apps already offer it on BSC. What Taproom must be best at is in "Positioning" below. Read it before proposing or building a feature.
+
 Taproom is an **independent, community-built app. It is not affiliated with or endorsed by Brew.** Never use Brew's logo or imply official status in UI, copy, or metadata.
 
 ### Brew context (domain knowledge)
-- Brew is a token launchpad on BSC. Tokens launch directly into **PancakeSwap V3** pools with **permanently locked liquidity** (no bonding curve).
-- Tokens are "brewed with" a pair asset: WBNB, the native **$BREW** token, other memecoins, or tokenized stocks ("bStocks").
-- Trading fee is 1%; the token side of the fee is burned.
-- $BREW contract (verify on BscScan before use): `0xfa6d9b504848606eb9aec04ccc161d169b3f2159`
-- Brew launch factory address: **TODO — not yet confirmed.** Find it by opening a known Brew launch transaction on BscScan and reading which contract created the token. Record it in `app/src/lib/chain/addresses.ts` with a comment linking the source tx.
+- Brew is a token launchpad on BSC, live since early September 2026. Tokens launch directly into **PancakeSwap V3** pools with **permanently locked liquidity** (no bonding curve).
+- Tokens are "brewed with" a pair asset: WBNB, USDT, the native **$BREW** token, other memecoins, or tokenized stocks ("bStocks"). A Brew token can be brewed with another Brew token.
+- Brew has **five launch factories**: standard (about 89% of launches on 2026-10-01), dividend, multi-pair v1, and two deployments of multi-pair v2. A multi-pair launch gives one token several pools. Only the standard factory is indexed so far (`docs/0004-indexer-and-feed.md`).
+- Standard-factory tokens share one contract template with no owner, mint, blacklist or tax-setting functions (`docs/0009-safety-checks.md`).
+- Trading fee is 1%; the token side of the fee is burned. The pair side is reported to be split between the creator and the protocol, and a creator can route their share to holders or to buyback-and-burn. That split comes from secondary sources: check it on-chain before relying on it.
+- $BREW contract: `0xfa6d9b504848606eb9aec04ccc161d169b3f2159`
+- Confirmed addresses live in `shared/src/addresses.ts`, each with a comment saying where it came from. `app/src/lib/chain/addresses.ts` re-exports them. Still unconfirmed: the standard factory's deployment block and Brew's liquidity locker contract.
 
 **Never guess or invent a contract address, ABI, or event signature.** If one is needed and not in `addresses.ts`, stop and ask.
 
+## Positioning
+
+Set on 2026-10-02 at the project owner's request. The decision is in `docs/0011-positioning.md` and the evidence in `docs/research-2026-10-competitive-landscape.md`.
+
+- **The core loop is not unique.** Fomo, GMGN and Axiom already offer wallet following or tracking, one-tap trading and generic token checks on BSC. They can trade every Brew token, because Brew tokens are ordinary PancakeSwap V3 pools.
+- **Taproom does not compete on** execution speed, funding options, chain coverage or trading-terminal features. Build those only as far as a user needs in order to act on what they see.
+- **Taproom must be best at two things:**
+  1. **Provable records.** Receipts and trader records computed only from indexed chain data, losses included, that anyone can check without trusting a screenshot.
+  2. **Brew-specific risk reading.** What generic scanners do not compute per launchpad: a deployer's record across Brew launches, who held the supply in the first blocks, and what the pair asset adds to the risk.
+- **Both depend on complete indexed history.** A record built from partial history is not verified: say what period it covers, or do not show it.
+- **Nobody ships a social layer for Brew yet, Brew included** (checked 2026-10-02). That is a head start, not a moat: Brew or a larger app could add one.
+- **Taproom's ceiling is Brew's volume.** Keep launch, pool and trade data free of Brew-only assumptions so a second launchpad could be added without a rewrite. Adding one is not v1 work.
+
+Every feature should serve one of those two goals or be a release requirement (see MVP scope). If it does neither, flag it before building.
+
 ## MVP scope (v1)
 
-Build these, in this order:
+### Steps 1 to 7: first version built
 
-1. **Sign in + wallet + profile** — the app opens on a sign-in screen offering Google and Apple, and nothing else is reachable until the user signs in; an embedded self-custodial wallet is created for the user; the profile is keyed to that wallet's address.
-2. **Follow graph** — follow/unfollow any wallet; search by address or profile name.
-3. **Live trade feed** — buys, sells, and launches from followed wallets on Brew tokens, newest first, near-real-time.
-4. **Token page** — price, market cap, liquidity, holders, recent trades, safety badge.
-5. **One-tap buy** — swap via PancakeSwap V3 from the user's embedded wallet, inside the app, with slippage control and a safety check before the user confirms.
-6. **Safety badges** — a score plus plain-language reasons on every token (see Safety model).
-7. **Receipt cards** — shareable image proving an on-chain entry (see Receipts).
+Each step has a first version. The record named beside it says what was built and its known limits; read it before changing that area.
+
+1. **Sign in + wallet + profile** — the app opens on a sign-in screen offering Google and Apple, and nothing else is reachable until the user signs in; an embedded self-custodial wallet is created for the user; the profile is keyed to that wallet's address. (`docs/0007`)
+2. **Follow graph** — follow/unfollow any wallet; search by address or profile name. (`docs/0003`)
+3. **Live trade feed** — buys, sells, and launches from followed wallets on Brew tokens, one row per token, polled every 10 seconds. It opens on Trending, and shows every wallet's activity when the user follows nobody. (`docs/0004`)
+4. **Token page** — price, market cap, liquidity, holders, recent trades, safety badge. Money figures are in the pair asset, not USD. (`docs/0005`, `docs/0006`)
+5. **One-tap buy** — swap via PancakeSwap V3 from the user's embedded wallet, inside the app, with slippage control and a safety check before the user confirms. BNB-paired tokens only so far. (`docs/0008`)
+6. **Safety badges** — a score plus plain-language reasons on every token (see Safety model). (`docs/0009`)
+7. **Receipt cards** — shareable image proving an on-chain entry (see Receipts). (`docs/0010`)
+
+### Steps 8 to 11: next, in this order
+
+These are the steps that serve the positioning. `docs/0011` has the reasoning.
+
+8. **Indexer history and coverage** — backfill from the standard factory's deployment block, then index the multi-pair factories. The block is unconfirmed and backfill needs an RPC that serves old logs. The dividend factory waits on its open question. Steps 9 to 11 are only as good as this.
+9. **Trader records** — on the wallet screen, a wallet's entries, exits and results on Brew tokens, computed from the indexer (see Trader records). The wallet screen is a placeholder today.
+10. **Checkable receipts** — a public link, and a QR code on the card, that re-renders the receipt from indexed data; and a list of the user's own receipts (see Receipts).
+11. **Brew-specific safety inputs** — deployer record, launch-time holders, pair-asset risk and origin (see Safety model).
+
+### Before the first release build
+
+Requirements for a build that real users can fund. They are not where Taproom competes, so keep each one minimal.
+
+- **Key export** — a hard rule below, not built yet.
+- **Sell** — a user who bought in the app must be able to sell in the app, through the same review step as a buy. `docs/0008` left selling out.
+- **Portfolio tab** — the user's own holdings. A placeholder today.
+- **Error reporting** — Sentry is not installed (see Stack).
+- **App identity** — a real bundle identifier in place of the placeholder `com.anonymous.social-trading`. Apple sign-in does not work without one (`docs/0007`).
+- **Store rules** — the checks under Open questions.
 
 ### Out of scope for v1 (v2+)
-Leaderboard seasons, token-gated holder chat rooms, in-app token launching ("Snap & Launch"), monthly Wrapped cards, push alerts on dev-wallet moves, PnL/tax exports, Chinese-language support, the Taproom token itself. Also v2+, although Fomo has them: funding the wallet with Apple Pay or a card, Taproom paying network fees for users, a per-trade fee, and chains other than BSC. Don't build these unless asked; do keep the data model friendly to them.
+Leaderboard seasons, token-gated holder chat rooms, in-app token launching ("Snap & Launch"), monthly Wrapped cards, push alerts on dev-wallet moves, PnL/tax exports, Chinese-language support, launchpads other than Brew, the Taproom token itself. Also v2+, although Fomo has them: funding the wallet with Apple Pay or a card, Taproom paying network fees for users, a per-trade fee, and chains other than BSC. Don't build these unless asked; do keep the data model friendly to them.
 
 ## Stack (defaults — change only with a stated reason)
 
@@ -42,13 +83,13 @@ Check `package.json` first. If the repo already uses a library for a job, follow
 
 - **App:** Expo (React Native) + **Expo Router**, **TypeScript strict**.
 - **Native deps:** install with `npx expo install <pkg>` so versions match the Expo SDK. **Do not upgrade the Expo SDK** without asking.
-- **Wallet:** an embedded self-custodial wallet from **Privy** (the provider Fomo uses), with **viem**. Check current Privy docs for Expo setup and BSC support; don't rely on memory. The earlier Reown AppKit (WalletConnect) flow has been removed from the app's code; its packages remain installed until the external-wallet question below is settled.
+- **Wallet:** an embedded self-custodial wallet from **Privy** (the provider Fomo uses), with **viem**. `viem` is pinned to 2.56.0 in the app and the indexer, the version Privy's SDK requires; do not bump it on its own. Check current Privy docs for Expo setup and BSC support; don't rely on memory. The earlier Reown AppKit (WalletConnect) flow has been removed from the app's code; its packages remain installed until the external-wallet question below is settled.
 - **Server data:** TanStack Query. **Client state:** Zustand. Keep both thin.
-- **Styling:** follow the existing setup; if none, NativeWind.
-- **Indexer:** separate TypeScript service in `/indexer` (Ponder recommended), writing to Postgres. Indexes Brew launches and PancakeSwap V3 swaps for Brew tokens on BSC.
-- **App backend:** Supabase (Postgres, auth, realtime) for profiles, follows, and push tokens. The feed can poll every 5–10s in v1; switch to realtime once it works.
+- **Styling:** React Native `StyleSheet` with the theme tokens in `app/src/theme` (`docs/0001`). Do not add NativeWind.
+- **Indexer:** separate TypeScript service in `/indexer`, built on Ponder: PGlite in development, Postgres when `DATABASE_URL` is set. It indexes Brew launches, PancakeSwap V3 swaps in Brew pools and Brew token transfers on BSC, and serves GraphQL plus the `/activity` and `/safety` routes. Anything that needs a server-side RPC key goes in its API routes.
+- **App backend:** Supabase (Postgres, auth, realtime) for profiles, follows, and push tokens, plus the `privy-session` edge function that turns a Privy sign-in into a Supabase session. On-chain data stays in the indexer's database. The feed polls every 10 seconds in v1; switch to realtime once it works.
 - **Share images:** `react-native-view-shot` + `expo-sharing`.
-- **Errors/telemetry:** Sentry on mobile; structured JSON logs in the indexer. Instrument from day one — every feed query, quote, and swap should be traceable.
+- **Errors/telemetry:** Sentry on mobile; structured JSON logs in the indexer. Every feed query, quote, and swap should be traceable. Sentry is **not installed yet** (`docs/0008`): it is a requirement before the first release build, and adding it follows "ask before adding a dependency".
 
 ## Project structure
 
@@ -56,6 +97,7 @@ Check `package.json` first. If the repo already uses a library for a job, follow
 app/                      # the Expo project (npm workspace)
   src/
     app/                  # Expo Router screens only — keep logic out
+      sign-in.tsx
       (tabs)/
         feed.tsx
         discover.tsx
@@ -63,21 +105,24 @@ app/                      # the Expo project (npm workspace)
         profile.tsx
       token/[address].tsx
       wallet/[address].tsx
+      receipt/[id].tsx
     features/
       feed/               # feed queries, feed item components
-      follow/
+      follow/             # follow graph, wallet search, wallet header
+      profile/            # sign-in, session, profile card
+      token/              # token page: stats, holders, recent trades
       trade/              # quotes, swap execution, slippage
       safety/             # scoring + badge UI
       receipts/           # receipt card rendering + sharing
     lib/
       chain/              # viem clients, abis/, addresses.ts, formatting
-      api/                # backend + indexer clients
+      api/                # Supabase, indexer and Privy clients
     components/           # shared UI primitives
     theme/
 indexer/                  # standalone Ponder service, own package.json
-shared/                   # @repo/shared: domain types + bigint money helpers
-supabase/                 # migrations for profiles, follows, push tokens
-docs/                     # decisions (ADR-style), scoring notes
+shared/                   # @repo/shared: addresses, domain types, bigint money and price helpers
+supabase/                 # migrations (profiles, follows, push tokens) and edge functions
+docs/                     # decision records (ADR-style) and research notes
 ```
 
 Screens in `app/src/app/` compose feature components. Business logic lives in `app/src/features/*`; chain code lives in `app/src/lib/chain`. Paths like `src/features/safety` elsewhere in this file are relative to `app/`.
@@ -96,21 +141,44 @@ Modelled on the Fomo app. Signed off by the project owner on 2026-10-02; this re
 
 Every token shows a score (Safe / Caution / Danger) **and the reasons**. Never show a score without its reasons.
 
-Inputs (v1):
-- **Dev wallet:** has the deployer sold, how much, how fast after launch; prior launches from the same deployer and how they ended.
-- **Holder concentration:** top-10 share of supply, excluding the LP pool, burn address, and known exchange wallets.
+Standard-factory tokens share one template, so the contract check passes for every token Taproom indexes, and the sell simulation is expected to as well. Neither tells one Brew token from another. The inputs that differ between tokens carry the score, which is why the Brew-specific inputs are step 11.
+
+Inputs built (`docs/0009-safety-checks.md` has the thresholds and what each input leaves out):
+- **Dev wallet:** has the deployer sold, how much, how fast after launch.
+- **Holder concentration:** top-10 share of supply, excluding the token's pools and the burn address. Known exchange wallets are not excluded yet.
 - **Contract checks:** owner privileges, mint function, adjustable taxes, blacklist functions.
-- **Sell simulation (honeypot check):** simulate a small buy then sell with `eth_call` and viem state overrides; flag if the sell reverts or the effective tax is high. A third-party API like GoPlus can be a secondary signal, never the only one.
-- **Wash activity:** volume vs. unique traders, wallets round-tripping with each other, clusters funded from the same source.
+- **Sell simulation (honeypot check):** a small buy then a sell inside one simulated block (`eth_simulateV1` through viem, with a state override for the balance); flag if the sell reverts or the round-trip loss is high. BNB-paired tokens only so far. A third-party API like GoPlus can be a secondary signal, never the only one.
+- **Wash activity:** trades vs. unique wallets, and the busiest wallet's share of trades.
+
+Inputs still to build, the Brew-specific ones:
+- **Deployer record:** prior Brew launches from the same deployer and how they ended, not only how many there were.
+- **Launch-time holders:** the share of supply bought in the first blocks by snipers, and by bundles.
+- **Pair asset:** what the token is brewed with, as its own reason. Liquidity priced in a memecoin can lose its value with that memecoin.
+- **Origin:** confirm the token was created by a Brew factory in `addresses.ts` and matches that factory's template. A token that does not is never Safe.
+- **Wash activity, in full:** wallets round-tripping with each other, clusters funded from the same source.
 
 Rules:
 - Scoring code is pure, deterministic, and unit-tested with fixture data.
 - If an input can't be fetched, mark it "Unknown." Never treat missing data as safe.
 - Wording is factual ("Deployer sold 40% of supply within 10 minutes"), never advice ("Don't buy this").
+- Thresholds are recorded in the decision record that introduces them. They are judgement until calibrated against how tokens ended; do not describe them as more than that.
 
 ## Receipts
 
 A receipt card proves an on-chain entry: token, entry tx hash, timestamp, market cap at entry, current market cap, and the multiple. It includes a BscScan link and is generated only from indexed on-chain data. **Never let users enter or edit receipt numbers.** Unverifiable receipts break the whole hype loop.
+
+- **A shared image can be edited.** Each card therefore needs a public link, and a QR code for it, that re-renders the receipt from indexed data. Until that exists, the person looking at a receipt cannot check it. Not built yet (step 10); `docs/0010-receipts.md` describes the card as it is.
+- **A receipt proves one thing:** that the wallet shown bought that token at that time and price. It does not prove the wallet still holds, or made a profit. Copy on the card must not claim more.
+
+## Trader records
+
+A trader record is what a wallet did on Brew tokens: its entries, its exits, and the result of each closed position, computed only from indexed trades. Not built yet (step 9); it goes on the wallet screen.
+
+- **Losses are always shown.** No setting hides them, and nothing in a record is entered or edited by the user.
+- **State the period covered.** If the indexed history for a wallet is incomplete, the record says so. Never present a partial record as complete.
+- **No adding across pair assets without a price.** Amounts in different pair assets are not comparable (`docs/0004`, `docs/0006`).
+- **Factual wording only,** as with safety reasons: what the wallet did, never whether to copy it.
+- Record maths is pure and unit-tested with fixture data, like scoring.
 
 ## Hard rules
 
@@ -130,14 +198,25 @@ A receipt card proves an on-chain entry: token, entry tx hash, timestamp, market
 - Show "Not affiliated with Brew" in the About/settings screen.
 
 ## Open questions (flag, don't decide silently)
-- **App store policy:** decided to trade inside the app, as Fomo does. Apple and Google still have specific rules for apps that facilitate crypto trading; check the current guidelines before the first release build.
-- **External wallets:** whether connecting an existing wallet comes back as an option beside the embedded wallet. If not, uninstall the Reown and wagmi packages.
+- **App store policy:** decided to trade inside the app, as Fomo does. Apple and Google still have specific rules for apps that facilitate crypto trading; check the current guidelines before the first release build. Apple's guideline 3.1.5, as read on 2026-10-02:
+  - (i) wallet apps must come from a developer enrolled as an organization;
+  - (iii) exchange features only in regions where the app has the licensing for them;
+  - (iv) "crypto-securities or quasi-securities trading" must come from approved financial institutions;
+  - (v) no offering currency for tasks such as inviting users or posting.
+- **bStock-paired tokens:** whether Taproom shows them, and whether it lets users buy them, given 3.1.5(iv).
+- **Dividend-factory tokens:** whether Taproom shows or trades Brew tokens that route fees to holders. The "no dividends" rule above is about Taproom's own offering and does not answer this.
+- **External wallets:** whether connecting an existing wallet comes back as an option beside the embedded wallet. If not, uninstall the Reown and wagmi packages and turn off Supabase's Sign in with Ethereum provider, which is still enabled from `docs/0002`.
 - **Fomo features not yet decided:** Apple Pay or card funding (needs a payment provider and its compliance terms), Taproom paying network fees, and charging a per-trade fee. Each needs its own sign-off.
-- Brew factory address and launch event signature (see TODO above).
-- Taproom token: name, ticker, and mechanics are not final. Planned direction: holding unlocks pro features; in-app launch fees paid in the token are burned; season rewards are cosmetics or fee discounts. Do not build token features in v1.
+- **Finding wallets to follow:** Discover is search by address or name, and a token's trades link to each trader's wallet screen. Whether v1 also lists wallets by their record is undecided; a ranked list is close to the leaderboard that is v2.
+- **Receipt verification page:** where the public link is hosted, and on what domain.
+- **Languages:** Brew's own site ships Chinese and Japanese (checked 2026-10-02). Taproom v1 is English-only, and Chinese is listed as v2 above; whether that still holds is undecided.
+- **Launchpad dependency:** whether Taproom stays Brew-only. See Positioning.
+- **Brew facts still unconfirmed:** the standard factory's deployment block, and the liquidity locker contract.
+- Taproom token: name, ticker, and mechanics are not final. Planned direction: holding unlocks pro features; in-app launch fees paid in the token are burned; season rewards are cosmetics or fee discounts. Rewards must not pay users for inviting or posting (Apple 3.1.5(v)). Do not build token features in v1.
 
 ## How to work in this repo
 
+- **Name the goal.** Before starting a feature, say which it serves: provable records, Brew-specific risk reading, or a release requirement (see Positioning and MVP scope). If none, flag it before building.
 - **Plan first** for anything touching more than one feature: list files to change, then wait for a go-ahead.
 - Keep changes small and scoped to one feature or fix.
 - **Ask before adding a dependency.** Say what it's for and why an existing one won't do.
@@ -149,6 +228,7 @@ A receipt card proves an on-chain entry: token, entry tx hash, timestamp, market
 - Handle loading, empty, and error states on every screen that fetches data.
 - Format all on-chain numbers through shared helpers in `src/lib/chain` (decimals, market cap, short addresses), never inline.
 - Record decisions that would surprise a future reader in `docs/` as a short ADR.
+- **Keep the docs true.** When a change makes a statement in this file, a README or a decision record stale (a step built, a question settled, an address confirmed), fix it in the same change. In an accepted record, add a dated line under "Since then" instead of rewriting what was decided.
 
 ## Commands
 
@@ -159,9 +239,10 @@ npm run dev:app         # Expo dev server
 npm run dev:indexer     # Ponder dev server (needs BSC_RPC_URL in indexer/.env.local)
 npm run typecheck       # tsc --noEmit in every workspace
 npm run lint            # expo lint in app/
-npm test                # vitest in app, indexer and shared
+npm test                # vitest in app, indexer, shared and supabase/functions
 npm run db:start        # local Supabase
 npm run db:reset        # rebuild the local DB from migrations
+npm run db:migration <name>   # new file in supabase/migrations/
 ```
 
 Run from `app/`:
@@ -174,8 +255,11 @@ npx expo lint           # lint
 
 ## Glossary
 
-- **Brewed with / pair:** the asset a Brew token is paired against in its pool (WBNB, $BREW, a memecoin, or a bStock).
+- **Brewed with / pair:** the asset a Brew token is paired against in its pool (WBNB, USDT, $BREW, a memecoin, or a bStock).
 - **Dev wallet / deployer:** the wallet that launched the token.
 - **Sniper:** a wallet that buys within the first blocks after launch to flip.
+- **Bundle:** wallets funded from the same source that buy together at launch, so one holder looks like many.
+- **Template:** the contract code that every token from one Brew factory shares.
 - **Burn:** tokens sent to a dead address, permanently removed from supply.
 - **Receipt:** a verified, shareable proof of an on-chain entry.
+- **Trader record:** a wallet's entries, exits and results on Brew tokens, computed from indexed trades.

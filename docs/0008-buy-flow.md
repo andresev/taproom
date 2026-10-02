@@ -47,3 +47,10 @@ slippage control and the safety status shown before the user confirms.
 - The balance check does not reserve BNB for the network fee.
 - Quotes and swaps are not reported to an error service; Sentry is still not
   installed.
+
+## Since then
+
+- 2026-10-02: 0009 filled in the five safety inputs. The review step now shows a
+  real score, and Confirm stays disabled until it has loaded.
+- 2026-10-02: 0011 lists selling in the app, and Sentry, as requirements before the
+  first release build. Neither is built.

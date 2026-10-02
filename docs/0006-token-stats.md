@@ -45,3 +45,11 @@ indexer knew launches, pools and trades only.
   that would go negative is clamped to zero.
 - Indexing every transfer makes the first sync several times longer.
 - Live reads depend on a free public RPC from the device.
+
+## Since then
+
+- 2026-10-02: the safety checks use the top-10 holder share computed here (0009),
+  and receipts read `trade.sqrtPriceX96` for market cap at entry (0010).
+- 2026-10-02: figures are still in the pair asset. Trader records (0011, MVP step 9)
+  will need a way to compare results across pair assets, which is the USD follow-up
+  noted above.

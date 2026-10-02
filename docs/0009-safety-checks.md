@@ -62,3 +62,12 @@ These are starting values chosen by judgement, not calibrated against outcomes.
 
 On the token page and in the buy review, where Confirm stays disabled until the
 score has loaded. Not on feed rows: each score needs its own simulation.
+
+## Since then
+
+- 2026-10-02: 0011 sets the next inputs (MVP step 11): the deployer record,
+  launch-time holders, pair-asset risk, and origin, meaning whether the token came
+  from a Brew factory and matches its template. The reason is the template noted
+  above: every token the indexer covers shares it, so the contract check passes for
+  all of them and the sell simulation is expected to, which leaves three inputs to
+  tell tokens apart.

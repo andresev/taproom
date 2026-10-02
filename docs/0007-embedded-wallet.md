@@ -27,9 +27,8 @@ that sign-off on 2026-10-02 and asked for CLAUDE.md to be changed to match.
 - **Trading happens inside the app,** which settles the app store question in
   CLAUDE.md in favour of in-app swaps. The store guidelines still need checking
   before a release build.
-- **Privy is the intended provider,** because it is what Fomo uses. It is not
-  installed yet: adding it still goes through "ask before adding a dependency",
-  after reading its current Expo and BSC documentation.
+- **Privy is the provider,** because it is what Fomo uses. It was installed later
+  the same day (`@privy-io/expo`); the next section describes how it is used.
 - **Not adopted from Fomo in v1:** Apple Pay or card funding, Taproom paying
   network fees, a per-trade fee, and other chains. Each is listed in CLAUDE.md as
   out of scope or an open question needing its own sign-off.
@@ -71,15 +70,25 @@ that sign-off on 2026-10-02 and asked for CLAUDE.md to be changed to match.
 ## What this supersedes
 
 - 0002's reasons for turning off social logins and for wallet-signature sign-in no
-  longer describe the target. The code from 0002 still runs until the embedded flow
-  replaces it.
+  longer describe the target. Its connection and sign-in code has been removed from
+  the app, as described above.
 - The Supabase sign-in path (Sign in with Ethereum, and the trigger that creates a
-  profile from a verified wallet) will need rework for the new sign-in.
+  profile from a verified wallet) is replaced by the `privy-session` function. The
+  trigger and the provider setting in `supabase/config.toml` are still in place.
 
 ## Still open
 
-- How a Privy sign-in becomes a Supabase session and a `profiles` row keyed to the
-  embedded wallet.
 - Whether connecting an external wallet stays as an option.
 - Whether users who already have a profile from an external wallet need migrating.
   No wallet has signed in yet, so today there is nothing to migrate.
+
+## Since then
+
+- 2026-10-02: four statements in this record were corrected because it contradicted
+  itself. It said Privy was not installed, that 0002's code still ran, that the
+  Supabase sign-in path still needed rework, and that turning a Privy sign-in into a
+  Supabase session was still open, while "How sign-in is implemented" describes all
+  four as done.
+- 2026-10-02: buys are signed by the embedded wallet (0008).
+- 2026-10-02: key export is not built. 0011 lists it, with a real bundle identifier,
+  as a requirement before the first release build.

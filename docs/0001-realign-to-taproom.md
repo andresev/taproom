@@ -37,3 +37,17 @@ the user's own wallet.
 - How a wallet signature becomes a Supabase session and a `profiles` row.
 - App store policy for in-app swaps.
 - The iOS bundle identifier is still the placeholder `com.anonymous.social-trading`.
+
+## Since then
+
+- 2026-10-01: the Brew factory addresses and launch events were confirmed, with the
+  PancakeSwap V3 factory and WBNB (0004). Addresses moved to
+  `shared/src/addresses.ts`; the app's `addresses.ts` re-exports them.
+- 2026-10-01: wallet signature to session and profile was settled in 0002.
+- 2026-10-02: 0007 replaced that with Google and Apple sign-in and an embedded
+  wallet, so "the user's own wallet" in the context above now means that wallet. It
+  also decided that trading happens inside the app; the store guideline checks are
+  still open (CLAUDE.md, Open questions).
+- 2026-10-02: the PancakeSwap router and quoter were confirmed in 0008.
+- 2026-10-02: the iOS bundle identifier is still the placeholder. 0011 lists a real
+  one as a requirement before the first release build.

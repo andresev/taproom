@@ -341,7 +341,8 @@ email_optional = false
 enabled = false
 
 # Allow EVM wallet holders to sign in via Sign in with Ethereum (SIWE, EIP-4361).
-# Taproom's only sign-in method: the verified address keys the profile (see docs/0002).
+# This was Taproom's sign-in until docs/0007 replaced it with the privy-session function.
+# Still enabled until the external-wallet question in CLAUDE.md is settled.
 [auth.web3.ethereum]
 enabled = true
 

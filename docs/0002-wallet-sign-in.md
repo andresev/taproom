@@ -1,6 +1,6 @@
 # 0002: Wallet connect and sign-in
 
-Date: 2026-10-01. Status: accepted.
+Date: 2026-10-01. Status: superseded by 0007 on 2026-10-02.
 
 ## Context
 
@@ -55,3 +55,18 @@ never claim an address it had not proved it controls.
 - Sentry is not installed yet, so sign-in failures are shown to the user but not
   reported anywhere.
 - Android wallet detection needs a `queries` config plugin; not added yet.
+
+## Since then
+
+- 2026-10-02: 0007 replaced this sign-in with Google and Apple sign-in through Privy
+  and an embedded wallet. The Reown connection code and the Sign in with Ethereum
+  flow were removed from the app; `app/src/lib/chain/wallet.ts` no longer exists.
+- Still in place from this record, all waiting on the external-wallet question in
+  CLAUDE.md: the database trigger, which 0007 calls harmless; Supabase's Sign in
+  with Ethereum provider, still enabled in `supabase/config.toml`; the Reown and
+  wagmi packages; and `EXPO_PUBLIC_REOWN_PROJECT_ID` and `EXPO_PUBLIC_APP_URL` in
+  `app/.env.example`, which the app no longer reads.
+- Still in use: the `app/src/features/profile` folder.
+- Still true: Sentry is not installed. A real HTTPS domain is still needed, now for
+  the receipt verification link (0011).
+- No longer relevant: the Android wallet-detection plugin.
