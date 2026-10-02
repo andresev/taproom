@@ -1,5 +1,8 @@
 import { parseAbi } from "viem";
 
+/** Standard BEP-20 Transfer, for holder balances. */
+export const erc20TransferAbi = parseAbi(["event Transfer(address indexed from, address indexed to, uint256 value)"]);
+
 /** The two BEP-20 metadata reads the indexer makes for a launch. */
 export const erc20MetadataAbi = parseAbi([
   "function decimals() view returns (uint8)",

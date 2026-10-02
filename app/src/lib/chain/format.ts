@@ -66,6 +66,24 @@ export function formatMultiple(multiple: number): string {
   return `${trimZeros(multiple.toFixed(multiple >= 10 ? 1 : 2))}x`;
 }
 
+/**
+ * A price, which can be far below one: keeps `significant` digits after the
+ * leading zeros instead of a fixed number of decimals. "0.000000008006",
+ * "0.01234", "1,234.5". Truncates, never rounds up.
+ */
+export function formatPrice(units: bigint, decimals: number, significant = 4): string {
+  if (units <= 0n) return units === 0n ? '0' : '—';
+  const [whole = '0', frac = ''] = formatBaseUnits(units, decimals).split('.');
+  if (whole !== '0') {
+    const keep = Math.max(0, significant - whole.length);
+    const shown = frac.slice(0, keep).replace(/0+$/, '');
+    return `${groupThousands(whole)}${shown ? `.${shown}` : ''}`;
+  }
+  const leadingZeros = frac.length - frac.replace(/^0+/, '').length;
+  const shown = frac.slice(0, leadingZeros + significant).replace(/0+$/, '');
+  return shown ? `0.${shown}` : '0';
+}
+
 /** A V3 pool fee, in hundredths of a basis point, as a percentage: 10000 is "1%", 2500 is "0.25%". */
 export function formatPoolFee(fee: number): string {
   if (!Number.isInteger(fee) || fee < 0) return '—';

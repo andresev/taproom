@@ -5,9 +5,15 @@ import type { TokenDetails } from './types';
 /** How many of the newest trades the token page lists. */
 export const RECENT_TRADES = 30;
 
+/**
+ * How many of the largest balances are fetched. More than ten, so the top-10
+ * share still has ten holders after the pool and burn address are set aside.
+ */
+export const LARGEST_HOLDERS = 20;
+
 /** A token, its pools and its newest trades. Bigint columns arrive as strings, block times as unix seconds. */
 export const TOKEN_QUERY = /* GraphQL */ `
-  query Token($address: String!, $limit: Int!) {
+  query Token($address: String!, $limit: Int!, $holders: Int!) {
     token(address: $address) {
       address
       symbol
@@ -25,6 +31,16 @@ export const TOKEN_QUERY = /* GraphQL */ `
         pairSymbol
         pairDecimals
         fee
+        tokenIsToken0
+      }
+    }
+    tokenStats(token: $address) {
+      holderCount
+    }
+    holders(where: { token: $address, balance_gt: "0" }, orderBy: "balance", orderDirection: "desc", limit: $holders) {
+      items {
+        holder
+        balance
       }
     }
     trades(where: { token: $address }, orderBy: "blockTime", orderDirection: "desc", limit: $limit) {
@@ -57,8 +73,17 @@ export interface TokenResponse {
     launchedAt: string;
   } | null;
   pools: {
-    items: { address: string; pairToken: string; pairSymbol: string | null; pairDecimals: number; fee: number }[];
+    items: {
+      address: string;
+      pairToken: string;
+      pairSymbol: string | null;
+      pairDecimals: number;
+      fee: number;
+      tokenIsToken0: boolean;
+    }[];
   };
+  tokenStats: { holderCount: number } | null;
+  holders: { items: { holder: string; balance: string }[] };
   trades: {
     items: {
       id: string;
@@ -99,6 +124,12 @@ export function toTokenDetails(response: TokenResponse): TokenDetails | null {
       pairSymbol: pool.pairSymbol,
       pairDecimals: pool.pairDecimals,
       fee: pool.fee,
+      tokenIsToken0: pool.tokenIsToken0,
+    })),
+    holderCount: response.tokenStats?.holderCount ?? null,
+    largestHolders: response.holders.items.map((row) => ({
+      holder: row.holder as Address,
+      balance: BigInt(row.balance),
     })),
     recentTrades: response.trades.items.flatMap((trade) =>
       trade.poolInfo

@@ -1,7 +1,8 @@
 import { ponder } from "ponder:registry";
-import { pendingSwap, pool, token, trade } from "ponder:schema";
+import { holder, pendingSwap, pool, token, tokenStats, trade } from "ponder:schema";
 
 import { erc20MetadataAbi } from "../abis/erc20";
+import { applyTransfer, holderId } from "./holders";
 import { isToken0, tradeFromSwap, tradeId } from "./swap";
 
 const lower = (hex: `0x${string}`) => hex.toLowerCase() as `0x${string}`;
@@ -80,6 +81,7 @@ ponder.on("BrewFactory:TokenLaunched", async ({ event, context }) => {
           token: tokenAddress,
           pool: poolAddress,
           pairToken,
+          sqrtPriceX96: pending.sqrtPriceX96,
           blockNumber: pending.blockNumber,
           blockTime: pending.blockTime,
           ...amounts,
@@ -111,6 +113,7 @@ ponder.on("BrewPool:Swap", async ({ event, context }) => {
         pool: poolAddress,
         amount0: event.args.amount0,
         amount1: event.args.amount1,
+        sqrtPriceX96: event.args.sqrtPriceX96,
         blockNumber: event.block.number,
         blockTime: event.block.timestamp,
       })
@@ -131,9 +134,45 @@ ponder.on("BrewPool:Swap", async ({ event, context }) => {
       token: knownPool.token,
       pool: poolAddress,
       pairToken: knownPool.pairToken,
+      sqrtPriceX96: event.args.sqrtPriceX96,
       blockNumber: event.block.number,
       blockTime: event.block.timestamp,
       ...amounts,
     })
     .onConflictDoNothing();
+});
+
+ponder.on("BrewToken:Transfer", async ({ event, context }) => {
+  const tokenAddress = lower(event.log.address);
+  const from = lower(event.args.from);
+  const to = lower(event.args.to);
+  const fromId = holderId(tokenAddress, from);
+  const toId = holderId(tokenAddress, to);
+
+  const [fromRow, toRow] = await Promise.all([
+    context.db.find(holder, { id: fromId }),
+    context.db.find(holder, { id: toId }),
+  ]);
+  const effect = applyTransfer(from, to, event.args.value, fromRow?.balance ?? 0n, toRow?.balance ?? 0n);
+
+  if (effect.fromBalance !== null) {
+    const balance = effect.fromBalance;
+    await context.db
+      .insert(holder)
+      .values({ id: fromId, token: tokenAddress, holder: from, balance })
+      .onConflictDoUpdate({ balance });
+  }
+  if (effect.toBalance !== null && from !== to) {
+    const balance = effect.toBalance;
+    await context.db
+      .insert(holder)
+      .values({ id: toId, token: tokenAddress, holder: to, balance })
+      .onConflictDoUpdate({ balance });
+  }
+  if (effect.holderDelta !== 0) {
+    await context.db
+      .insert(tokenStats)
+      .values({ token: tokenAddress, holderCount: effect.holderDelta })
+      .onConflictDoUpdate((row) => ({ holderCount: row.holderCount + effect.holderDelta }));
+  }
 });

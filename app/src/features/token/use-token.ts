@@ -5,7 +5,7 @@ import { toTokenActivities, type ActivityResponse } from '@/features/feed/activi
 import type { TokenActivity } from '@/features/feed/types';
 import { indexerGraphql, indexerPost } from '@/lib/api/indexer';
 
-import { RECENT_TRADES, TOKEN_QUERY, toTokenDetails, type TokenResponse } from './token-query';
+import { LARGEST_HOLDERS, RECENT_TRADES, TOKEN_QUERY, toTokenDetails, type TokenResponse } from './token-query';
 import type { TokenDetails } from './types';
 
 /** Same cadence as the feed. */
@@ -17,7 +17,13 @@ export function useToken(address: Address) {
     queryKey: ['token', address],
     refetchInterval: TOKEN_POLL_MS,
     queryFn: async (): Promise<TokenDetails | null> =>
-      toTokenDetails(await indexerGraphql<TokenResponse>(TOKEN_QUERY, { address, limit: RECENT_TRADES })),
+      toTokenDetails(
+        await indexerGraphql<TokenResponse>(TOKEN_QUERY, {
+          address,
+          limit: RECENT_TRADES,
+          holders: LARGEST_HOLDERS,
+        }),
+      ),
   });
 }
 

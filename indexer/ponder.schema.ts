@@ -68,6 +68,8 @@ export const trade = onchainTable(
     amountBaseUnits: t.bigint().notNull(),
     pairToken: t.hex().notNull(),
     pairAmountBaseUnits: t.bigint().notNull(),
+    /** The pool's price right after this swap (shared/src/price.ts), for "market cap at entry". */
+    sqrtPriceX96: t.bigint().notNull(),
     blockNumber: t.bigint().notNull(),
     blockTime: t.bigint().notNull(),
   }),
@@ -92,8 +94,34 @@ export const pendingSwap = onchainTable("pending_swap", (t) => ({
   pool: t.hex().notNull(),
   amount0: t.bigint().notNull(),
   amount1: t.bigint().notNull(),
+  sqrtPriceX96: t.bigint().notNull(),
   blockNumber: t.bigint().notNull(),
   blockTime: t.bigint().notNull(),
+}));
+
+/** One address's balance of one Brew token, kept from Transfer events. Rows stay at zero once emptied. */
+export const holder = onchainTable(
+  "holder",
+  (t) => ({
+    /** `${token}-${holder}`. */
+    id: t.text().primaryKey(),
+    token: t.hex().notNull(),
+    holder: t.hex().notNull(),
+    balance: t.bigint().notNull(),
+  }),
+  (table) => ({
+    tokenBalanceIdx: index().on(table.token, table.balance),
+  }),
+);
+
+/**
+ * Running totals per token. Separate from `token` because a token's first
+ * transfers arrive before its launch event creates the `token` row.
+ */
+export const tokenStats = onchainTable("token_stats", (t) => ({
+  token: t.hex().primaryKey(),
+  /** Addresses with a non-zero balance, the pool and burn address included, the zero address not. */
+  holderCount: t.integer().notNull(),
 }));
 
 export const poolRelations = relations(pool, ({ one }) => ({

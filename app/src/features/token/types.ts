@@ -9,6 +9,15 @@ export interface TokenPool {
   pairDecimals: number;
   /** Pool fee in hundredths of a basis point: 10000 is 1%. */
   fee: number;
+  /** Whether the token is the pool's token0, which decides how the pool price is read. */
+  tokenIsToken0: boolean;
+}
+
+/** One address's indexed balance of the token. */
+export interface TokenHolder {
+  holder: Address;
+  /** Base units. */
+  balance: bigint;
 }
 
 export interface TokenTrade {
@@ -38,6 +47,10 @@ export interface TokenDetails {
   launchTxHash: TxHash;
   launchedAt: Date;
   pools: TokenPool[];
+  /** Addresses with a balance, the pool and burn address included. Null if the indexer has none yet. */
+  holderCount: number | null;
+  /** The largest balances, largest first, the pool and burn address included. */
+  largestHolders: TokenHolder[];
   /** Newest first. */
   recentTrades: TokenTrade[];
 }

@@ -3,6 +3,7 @@ import { createConfig, factory } from "ponder";
 import { getAbiItem } from "viem";
 
 import { brewFactoryAbi } from "./abis/brew-factory";
+import { erc20TransferAbi } from "./abis/erc20";
 import { pancakeV3PoolAbi } from "./abis/pancake-v3-pool";
 import { loadEnv } from "./src/env";
 
@@ -34,6 +35,19 @@ export default createConfig({
         address: ADDRESSES.brewFactory,
         event: getAbiItem({ abi: brewFactoryAbi, name: "TokenLaunched" }),
         parameter: "pool",
+      }),
+      startBlock,
+    },
+    // Every token a launch creates, for holder balances. The mint happens earlier in
+    // the launch transaction than TokenLaunched; Ponder still delivers it, because a
+    // child contract's events count from the block it was created in.
+    BrewToken: {
+      chain: "bsc",
+      abi: erc20TransferAbi,
+      address: factory({
+        address: ADDRESSES.brewFactory,
+        event: getAbiItem({ abi: brewFactoryAbi, name: "TokenLaunched" }),
+        parameter: "token",
       }),
       startBlock,
     },

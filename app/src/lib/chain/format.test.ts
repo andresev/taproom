@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatMultiple, formatPoolFee, formatTimeAgo, formatTokenAmount, formatUsdCompact, shortAddress } from './format';
+import { formatMultiple, formatPoolFee, formatPrice, formatTimeAgo, formatTokenAmount, formatUsdCompact, shortAddress } from './format';
 
 describe('shortAddress', () => {
   it('shortens an address', () => {
@@ -48,6 +48,30 @@ describe('formatMultiple', () => {
     expect(formatMultiple(3.2)).toBe('3.2x');
     expect(formatMultiple(0.5)).toBe('0.5x');
     expect(formatMultiple(12.34)).toBe('12.3x');
+  });
+});
+
+describe('formatPrice', () => {
+  it('keeps significant digits after the leading zeros of a tiny price', () => {
+    // 8.006489…e-9 with 36 decimals, a real RSUN/WBNB spot price.
+    expect(formatPrice(8006489484138914645347359533n, 36)).toBe('0.000000008006');
+    expect(formatPrice(12345n, 6)).toBe('0.01234');
+  });
+
+  it('drops decimals as the whole part grows', () => {
+    expect(formatPrice(1234567n, 6)).toBe('1.234');
+    expect(formatPrice(1234567890n, 6)).toBe('1,234');
+    expect(formatPrice(2500000n, 6)).toBe('2.5');
+  });
+
+  it('truncates rather than rounding up', () => {
+    expect(formatPrice(19999n, 6)).toBe('0.01999');
+  });
+
+  it('handles zero, negative and vanishing values', () => {
+    expect(formatPrice(0n, 18)).toBe('0');
+    expect(formatPrice(-1n, 18)).toBe('—');
+    expect(formatPrice(1n, 36)).toBe('0.000000000000000000000000000000000001');
   });
 });
 
