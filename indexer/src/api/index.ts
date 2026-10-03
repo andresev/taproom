@@ -4,12 +4,14 @@ import { db } from "ponder:api";
 import schema from "ponder:schema";
 
 import { ACTIVITY_LIMIT, activityRequestSchema, type ActivityRow } from "../activity";
-import { buildCoverage } from "../coverage";
+import { buildCoverage, withBlockTimes } from "../coverage";
 import { loadEnv } from "../env";
+import { recordRequestSchema, toPositions, type LegRow, type RecordResponse, type TokenInfo } from "../record";
 import { safetyRequestSchema, type SafetyFacts } from "../safety";
+import { rpc } from "./rpc";
 import { gatherSafetyFacts } from "./safety-facts";
 
-const { pool, token, trade } = schema;
+const { holder, pool, token, trade } = schema;
 const app = new Hono();
 
 app.use("/graphql", graphql({ db, schema }));
@@ -149,7 +151,87 @@ app.post("/activity", async (c) => {
  * say how far the sync has got; Ponder's own /ready and /status do.
  */
 const coverage = buildCoverage(loadEnv().START_BLOCK);
-app.get("/coverage", (c) => c.json(coverage));
+/** Start block times never change, so each is read once. A failed read is retried on the next request. */
+const blockTimes = new Map<number, number>();
+app.get("/coverage", async (c) => {
+  const missing = coverage.factories
+    .map((factory) => factory.fromBlock)
+    .filter((block): block is number => block !== null && !blockTimes.has(block));
+  await Promise.all(
+    [...new Set(missing)].map(async (blockNumber) => {
+      try {
+        const block = await rpc().getBlock({ blockNumber: BigInt(blockNumber) });
+        blockTimes.set(blockNumber, Number(block.timestamp));
+      } catch {
+        // Left out: the response says the time is unknown rather than guessing it.
+      }
+    }),
+  );
+  return c.json(withBlockTimes(coverage, blockTimes));
+});
+
+/**
+ * A wallet's indexed trades, added up per token and pair asset, with its current
+ * balance of each token. Facts only: the record maths (open or closed, result,
+ * totals) is in @repo/shared and runs in the app.
+ */
+app.post("/record", async (c) => {
+  const started = Date.now();
+  const parsed = recordRequestSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "Invalid request" }, 400);
+  const { wallet } = parsed.data;
+
+  const legs: LegRow[] = await db
+    .select({
+      token: trade.token,
+      pairToken: trade.pairToken,
+      pairSymbol: sql<string | null>`min(${pool.pairSymbol})`,
+      pairDecimals: sql<number>`min(${pool.pairDecimals})`,
+      buys: sql<number>`count(*) filter (where ${trade.side} = 'buy')`,
+      sells: sql<number>`count(*) filter (where ${trade.side} = 'sell')`,
+      tokensBought: sql<string>`coalesce(sum(${trade.amountBaseUnits}) filter (where ${trade.side} = 'buy'), 0)::text`,
+      tokensSold: sql<string>`coalesce(sum(${trade.amountBaseUnits}) filter (where ${trade.side} = 'sell'), 0)::text`,
+      paid: sql<string>`coalesce(sum(${trade.pairAmountBaseUnits}) filter (where ${trade.side} = 'buy'), 0)::text`,
+      received: sql<string>`coalesce(sum(${trade.pairAmountBaseUnits}) filter (where ${trade.side} = 'sell'), 0)::text`,
+      firstTradeAt: sql<string>`min(${trade.blockTime})::text`,
+      lastTradeAt: sql<string>`max(${trade.blockTime})::text`,
+    })
+    .from(trade)
+    .innerJoin(pool, eq(pool.address, trade.pool))
+    .where(eq(trade.wallet, wallet))
+    .groupBy(trade.token, trade.pairToken);
+
+  const tokenAddresses = [...new Set(legs.map((leg) => leg.token))];
+  const [tokenRows, holderRows] = tokenAddresses.length
+    ? await Promise.all([
+        db
+          .select({ address: token.address, symbol: token.symbol, name: token.name, decimals: token.decimals })
+          .from(token)
+          .where(inArray(token.address, tokenAddresses)),
+        db
+          .select({ token: holder.token, balance: holder.balance })
+          .from(holder)
+          .where(and(eq(holder.holder, wallet), inArray(holder.token, tokenAddresses))),
+      ])
+    : [[], []];
+
+  const tokens = new Map<`0x${string}`, TokenInfo>(tokenRows.map((row) => [row.address, row]));
+  const balances = new Map<`0x${string}`, string>(holderRows.map((row) => [row.token, row.balance.toString()]));
+  const { positions, truncated } = toPositions(legs, tokens, balances);
+  const response: RecordResponse = { wallet, positions, truncated };
+
+  console.log(
+    JSON.stringify({
+      service: "indexer",
+      event: "record",
+      wallet,
+      positions: positions.length,
+      truncated,
+      ms: Date.now() - started,
+    }),
+  );
+  return c.json(response);
+});
 
 /** How long one token's facts are reused. The simulation is the costly part. */
 const SAFETY_CACHE_MS = 60_000;

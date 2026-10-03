@@ -149,3 +149,11 @@ With the indexer started at block 125,035,000 on the development RPC:
 - Creation transactions, linked from `shared/src/addresses.ts`
 - `node_modules/ponder/src/runtime/filter.ts` and `internal/options.ts` (the
   1,000-address threshold)
+
+## Since then
+
+- 2026-10-02: `/coverage` also gives the time of each start block (`fromTime`), for
+  the trader record's note (0013).
+- 2026-10-02: editing indexer files while `ponder dev` runs on PGlite stopped the
+  indexer twice mid-sync ("PGlite is closed", then shutdown). Restarting resumes
+  from Ponder's cache. Stop the dev indexer before larger edits.

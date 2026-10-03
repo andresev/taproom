@@ -20,6 +20,8 @@ export interface FactoryCoverage {
    * indexer was started at the chain head, a block that is not recorded.
    */
   fromBlock: number | null;
+  /** Unix seconds of `fromBlock`; null when that block is unknown or its time could not be read. */
+  fromTime: number | null;
   /** True only when it is indexed from its deployment block, so no launch is missing. */
   complete: boolean;
 }
@@ -41,8 +43,20 @@ export function buildCoverage(startBlock: number | undefined): Coverage {
       deploymentBlock: factory.deploymentBlock,
       indexed: factory.indexed,
       fromBlock,
+      fromTime: null,
       complete: fromBlock !== null && fromBlock <= factory.deploymentBlock,
     };
   });
   return { chainId: BSC_CHAIN_ID, factories, complete: factories.every((factory) => factory.complete) };
+}
+
+/** The coverage with each start block's time filled in from `times` (block number to unix seconds). */
+export function withBlockTimes(coverage: Coverage, times: Map<number, number>): Coverage {
+  return {
+    ...coverage,
+    factories: coverage.factories.map((factory) => ({
+      ...factory,
+      fromTime: factory.fromBlock === null ? null : (times.get(factory.fromBlock) ?? null),
+    })),
+  };
 }

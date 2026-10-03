@@ -17,6 +17,28 @@ export async function indexerPost<T>(path: `/${string}`, body: unknown): Promise
   return (await res.json()) as T;
 }
 
+/** GET one of the indexer's own routes and return its JSON. */
+export async function indexerGet<T>(path: `/${string}`): Promise<T> {
+  if (!baseUrl) throw new Error('Missing EXPO_PUBLIC_INDEXER_URL — see app/.env.example');
+
+  const res = await fetch(`${baseUrl}${path}`);
+  if (!res.ok) throw new Error(`Indexer request failed: ${res.status}`);
+  return (await res.json()) as T;
+}
+
+/**
+ * Whether the indexer has finished its historical sync (Ponder's /ready: 200
+ * when done, 503 while it is still catching up).
+ */
+export async function indexerReady(): Promise<boolean> {
+  if (!baseUrl) throw new Error('Missing EXPO_PUBLIC_INDEXER_URL — see app/.env.example');
+
+  const res = await fetch(`${baseUrl}/ready`);
+  if (res.status === 200) return true;
+  if (res.status === 503) return false;
+  throw new Error(`Indexer request failed: ${res.status}`);
+}
+
 export async function indexerGraphql<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
   if (!baseUrl) throw new Error('Missing EXPO_PUBLIC_INDEXER_URL — see app/.env.example');
 

@@ -1,7 +1,7 @@
 import { DEPLOYMENT_BLOCKS } from "@repo/shared";
 import { describe, expect, it } from "vitest";
 
-import { buildCoverage } from "./coverage";
+import { buildCoverage, withBlockTimes } from "./coverage";
 
 const factory = (coverage: ReturnType<typeof buildCoverage>, name: string) =>
   coverage.factories.find((item) => item.name === name);
@@ -49,5 +49,14 @@ describe("buildCoverage", () => {
     const coverage = buildCoverage(DEPLOYMENT_BLOCKS.brewMultiPairFactoryV2);
     expect(factory(coverage, "standard")?.complete).toBe(false);
     expect(factory(coverage, "multiPairV2")?.complete).toBe(true);
+  });
+});
+
+describe("withBlockTimes", () => {
+  it("fills in the time of each start block it knows, and leaves the rest unknown", () => {
+    const coverage = withBlockTimes(buildCoverage(125_035_000), new Map([[125_035_000, 1790830608]]));
+    expect(factory(coverage, "standard")?.fromTime).toBe(1790830608);
+    expect(factory(coverage, "dividend")?.fromTime).toBeNull();
+    expect(factory(withBlockTimes(buildCoverage(125_035_000), new Map()), "standard")?.fromTime).toBeNull();
   });
 });

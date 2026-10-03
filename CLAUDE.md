@@ -59,7 +59,7 @@ Each step has a first version. The record named beside it says what was built an
 These are the steps that serve the positioning. `docs/0011` has the reasoning.
 
 8. **Indexer history and coverage** — backfill from the standard factory's deployment block, and index the multi-pair factories. Partly built (`docs/0012`): the deployment blocks are confirmed, multi-pair v1 and v2 are indexed, and `GET /coverage` says which factories are indexed and from which block. The backfill has not been run: it needs an RPC that serves old logs, and a fix for how Ponder requests logs once a factory has 1,000 child contracts. The dividend factory waits on its open question. Steps 9 to 11 are only as good as this.
-9. **Trader records** — on the wallet screen, a wallet's entries, exits and results on Brew tokens, computed from the indexer (see Trader records). The wallet screen is a placeholder today.
+9. **Trader records** — on the wallet screen, a wallet's entries, exits and results on Brew tokens, computed from the indexer (see Trader records). First version built (`docs/0013`); it states a partial period until step 8's backfill runs.
 10. **Checkable receipts** — a public link, and a QR code on the card, that re-renders the receipt from indexed data; and a list of the user's own receipts (see Receipts).
 11. **Brew-specific safety inputs** — deployer record, launch-time holders, pair-asset risk and origin (see Safety model).
 
@@ -114,6 +114,7 @@ app/                      # the Expo project (npm workspace)
       trade/              # quotes, swap execution, slippage
       safety/             # scoring + badge UI
       receipts/           # receipt card rendering + sharing
+      records/            # trader records on the wallet screen
     lib/
       chain/              # viem clients, abis/, addresses.ts, formatting
       api/                # Supabase, indexer and Privy clients
@@ -172,7 +173,7 @@ A receipt card proves an on-chain entry: token, entry tx hash, timestamp, market
 
 ## Trader records
 
-A trader record is what a wallet did on Brew tokens: its entries, its exits, and the result of each closed position, computed only from indexed trades. Not built yet (step 9); it goes on the wallet screen.
+A trader record is what a wallet did on Brew tokens: its entries, its exits, and the result of each closed position, computed only from indexed trades. It is on the wallet screen; `docs/0013` has the definitions of a position, its status and its result. The maths is in `shared/src/record.ts`.
 
 - **Losses are always shown.** No setting hides them, and nothing in a record is entered or edited by the user.
 - **State the period covered.** If the indexed history for a wallet is incomplete, the record says so. Never present a partial record as complete.
@@ -225,7 +226,7 @@ A trader record is what a wallet did on Brew tokens: its entries, its exits, and
 - Before calling a task done, run:
   - `npx tsc --noEmit`
   - `npx expo lint`
-  - tests for anything in `src/features/safety` or `src/lib/chain`
+  - tests for anything in `src/features/safety`, `src/features/records` or `src/lib/chain`, and for record maths in `shared/`
 - Don't silence type errors with `any` or `@ts-ignore`; fix the type or explain why you can't.
 - Handle loading, empty, and error states on every screen that fetches data.
 - Format all on-chain numbers through shared helpers in `src/lib/chain` (decimals, market cap, short addresses), never inline.

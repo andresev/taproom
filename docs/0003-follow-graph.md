@@ -35,3 +35,4 @@ The `follows` table and its row-level security came with the first migration.
   search are unchanged.
 - 2026-10-02: 0011 leaves open how users find wallets to follow. Discover is still
   search only, and the wallet screen has no trader record yet (MVP step 9).
+- 2026-10-02: the wallet screen shows the wallet's trader record (0013).

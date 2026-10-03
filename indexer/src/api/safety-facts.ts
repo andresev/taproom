@@ -2,13 +2,12 @@ import { ADDRESSES } from "@repo/shared";
 import { and, count, countDistinct, eq, ne, sql } from "ponder";
 import { db } from "ponder:api";
 import schema from "ponder:schema";
-import { createPublicClient, http, parseEther, type PublicClient } from "viem";
-import { bsc } from "viem/chains";
+import { parseEther } from "viem";
 
 import { erc20TradeAbi } from "../../abis/erc20";
 import { pancakeSwapRouterAbi } from "../../abis/pancake-swap-router";
-import { loadEnv } from "../env";
 import { roundTripLossBps, scanBytecode, type SafetyFacts } from "../safety";
+import { rpc } from "./rpc";
 
 // Lives under src/api because it reads the database through `ponder:api`, which
 // Ponder only allows API files to import.
@@ -18,13 +17,6 @@ const { pool, token, trade } = schema;
 const SIMULATED_BUY_WEI = parseEther("0.0001");
 /** A throwaway address that only ever exists inside the simulation. */
 const SIMULATED_TRADER = "0x000000000000000000000000000000000000c0de";
-
-let client: PublicClient | undefined;
-/** Created on first use, with the same server-side RPC the indexer syncs from. */
-function rpc(): PublicClient {
-  client ??= createPublicClient({ chain: bsc, transport: http(loadEnv().BSC_RPC_URL) });
-  return client;
-}
 
 type TokenRow = typeof token.$inferSelect;
 type PoolRow = typeof pool.$inferSelect;
