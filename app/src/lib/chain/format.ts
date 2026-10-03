@@ -11,5 +11,6 @@ export {
   formatTokenAmount,
   formatUsdCompact,
   formatUtcDateTime,
+  pairAssetLabel,
   shortAddress,
 } from '@repo/shared';

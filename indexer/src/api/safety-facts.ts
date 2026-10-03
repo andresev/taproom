@@ -1,5 +1,5 @@
 import { ADDRESSES, knownPairAsset } from "@repo/shared";
-import { and, asc, between, count, countDistinct, desc, eq, inArray, lt, ne, sql } from "ponder";
+import { and, asc, between, count, countDistinct, desc, eq, gt, inArray, lt, ne, notInArray, sql } from "ponder";
 import { db } from "ponder:api";
 import schema from "ponder:schema";
 import { parseEther } from "viem";
@@ -10,6 +10,7 @@ import { buildCoverage } from "../coverage";
 import { loadEnv } from "../env";
 import { FACTORIES } from "../factories";
 import {
+  BURN_ADDRESS,
   DEPLOYER_RECORD_LIMIT,
   LAUNCH_BLOCKS,
   lastToFirstPriceBps,
@@ -17,13 +18,14 @@ import {
   roundTripLossBps,
   scanBytecode,
   shareBps,
+  topTenShareBps,
   type SafetyFacts,
 } from "../safety";
 import { blockTime, rpc } from "./rpc";
 
 // Lives under src/api because it reads the database through `ponder:api`, which
 // Ponder only allows API files to import.
-const { pool, token, trade } = schema;
+const { holder, pool, token, trade } = schema;
 
 /** Small on purpose: Brew pools are thin, and a larger test buy would lose to price impact, not to the token. */
 const SIMULATED_BUY_WEI = parseEther("0.0001");
@@ -116,6 +118,19 @@ async function pairAssetFacts(pools: PoolRow[]): Promise<SafetyFacts["pairAssets
       kind: known ? known.kind : isBrewToken.has(pairToken) ? "brew-token" : "other",
     };
   });
+}
+
+/** The ten largest holders' share of supply, leaving out the token's pools and the burn address. */
+async function holderFacts(row: TokenRow, pools: PoolRow[]): Promise<SafetyFacts["holders"]> {
+  const excluded = [...pools.map((item) => item.address), BURN_ADDRESS as `0x${string}`];
+  const largest = await db
+    .select({ balance: holder.balance })
+    .from(holder)
+    .where(and(eq(holder.token, row.address), gt(holder.balance, 0n), notInArray(holder.holder, excluded)))
+    .orderBy(desc(holder.balance))
+    .limit(10);
+  const share = topTenShareBps(largest.map((item) => item.balance), row.totalSupply);
+  return share === null ? null : { topTenShareBps: share };
 }
 
 /** Where the indexed history starts, for stating the period a deployer record covers. */
@@ -324,13 +339,14 @@ export async function gatherSafetyFacts(tokenAddress: `0x${string}`): Promise<Sa
   // read leaves both Unknown.
   const code = await orUnknown("code", tokenAddress, () => runtimeCode(row));
 
-  const [devWallet, sellSimulation, washActivity, pairAssets, deployerRecord, launchHolders] = await Promise.all([
+  const [devWallet, sellSimulation, washActivity, pairAssets, deployerRecord, launchHolders, holders] = await Promise.all([
     orUnknown("dev-wallet", tokenAddress, () => devWalletFacts(row)),
     orUnknown("sell-simulation", tokenAddress, () => sellSimulationFacts(row, pools)),
     orUnknown("wash-activity", tokenAddress, () => washFacts(row)),
     orUnknown("pair-assets", tokenAddress, () => pairAssetFacts(pools)),
     orUnknown("deployer-record", tokenAddress, () => deployerRecordFacts(row)),
     orUnknown("launch-holders", tokenAddress, () => launchHolderFacts(row, pools)),
+    orUnknown("holders", tokenAddress, () => holderFacts(row, pools)),
   ]);
   return {
     token: tokenAddress,
@@ -338,6 +354,7 @@ export async function gatherSafetyFacts(tokenAddress: `0x${string}`): Promise<Sa
     contract: contractFacts(code),
     sellSimulation,
     washActivity,
+    holders,
     origin: originFacts(row, code),
     pairAssets,
     deployerRecord,

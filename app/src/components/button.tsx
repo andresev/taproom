@@ -1,20 +1,39 @@
-import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
+import { Icon, type IconName } from '@/components/icon';
 import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
-import { Spacing } from '@/theme';
+import { MinTouch, Radius, Spacing, Type } from '@/theme';
+
+/**
+ * - `primary`: the one brass action on a screen.
+ * - `secondary`: everything else (the default).
+ * - `destructive`: an action that removes or ends something.
+ * - `quiet`: an outlined action in brass text, for a repeated action such as a row's Buy.
+ */
+export type ButtonKind = 'primary' | 'secondary' | 'destructive' | 'quiet';
 
 export type ButtonProps = {
   label: string;
   onPress: () => void;
+  kind?: ButtonKind;
+  icon?: IconName;
   /** Shows a spinner and blocks presses while an action is in flight. */
   loading?: boolean;
   disabled?: boolean;
+  /** 52 for a screen's main action, 44 otherwise. */
+  size?: 'regular' | 'large';
 };
 
-export function Button({ label, onPress, loading = false, disabled = false }: ButtonProps) {
+export function Button({ label, onPress, kind = 'secondary', icon, loading = false, disabled = false, size = 'regular' }: ButtonProps) {
   const theme = useTheme();
   const inactive = disabled || loading;
+  const colors = {
+    primary: { fill: theme.accent, text: theme.onAccent, border: theme.accent },
+    secondary: { fill: theme.card, text: theme.text, border: theme.border },
+    destructive: { fill: 'transparent', text: theme.danger, border: theme.danger },
+    quiet: { fill: 'transparent', text: theme.accentText, border: theme.border },
+  }[kind];
 
   return (
     <Pressable
@@ -24,24 +43,47 @@ export function Button({ label, onPress, loading = false, disabled = false }: Bu
       accessibilityState={{ disabled: inactive, busy: loading }}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: pressed ? theme.backgroundSelected : theme.backgroundElement },
+        size === 'large' && styles.large,
+        { backgroundColor: pressed && kind !== 'primary' ? theme.cardPressed : colors.fill, borderColor: colors.border },
+        pressed && kind === 'primary' && styles.pressedPrimary,
         inactive && styles.inactive,
       ]}>
-      {loading ? <ActivityIndicator /> : <ThemedText type="smallBold">{label}</ThemedText>}
+      {loading ? (
+        <ActivityIndicator color={colors.text} />
+      ) : (
+        <View style={styles.content}>
+          {icon ? <Icon name={icon} color={colors.text} size={18} /> : null}
+          <ThemedText style={[styles.label, { color: colors.text }]}>{label}</ThemedText>
+        </View>
+      )}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 44,
+    minHeight: MinTouch,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.three,
+    paddingHorizontal: Spacing.three,
+    borderRadius: Radius.control,
+    borderWidth: StyleSheet.hairlineWidth * 2,
+  },
+  large: {
+    minHeight: 52,
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  label: {
+    ...Type.bodyStrong,
+  },
+  pressedPrimary: {
+    opacity: 0.85,
   },
   inactive: {
-    opacity: 0.5,
+    opacity: 0.45,
   },
 });

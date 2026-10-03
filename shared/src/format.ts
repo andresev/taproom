@@ -62,6 +62,15 @@ function trimZeros(n: string): string {
 }
 
 /**
+ * The name a pair asset is shown by. A pool holds wrapped BNB, but users pay and
+ * are paid in BNB, so WBNB reads "BNB". Anything else keeps its own symbol.
+ */
+export function pairAssetLabel(symbol: string | null, fallback = 'pair asset'): string {
+  if (!symbol) return fallback;
+  return symbol === 'WBNB' ? 'BNB' : symbol;
+}
+
+/**
  * A multiple for receipts and trader records: "3.2x", "0.24x", "12.3x". Truncated,
  * never rounded up, so 0.2499 reads "0.24x", not "0.25x". Cut by digits, not by
  * floating-point maths, which would turn 0.29 into 0.28.

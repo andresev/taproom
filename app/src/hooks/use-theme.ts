@@ -3,12 +3,11 @@
  * https://docs.expo.dev/guides/color-schemes/
  */
 
-import { Colors } from '@/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors, type Theme } from '@/theme';
 
-export function useTheme() {
+/** The colours for the phone's current appearance. Dark is Taproom's default (docs/0020). */
+export function useTheme(): Theme {
   const scheme = useColorScheme();
-  const theme = scheme === 'unspecified' ? 'light' : scheme;
-
-  return Colors[theme];
+  return Colors[scheme === 'light' ? 'light' : 'dark'];
 }

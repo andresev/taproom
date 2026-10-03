@@ -4,6 +4,11 @@
  */
 const baseUrl = process.env.EXPO_PUBLIC_INDEXER_URL;
 
+/** The address of a token's artwork on the indexer (GET /image/:token), or null when no indexer is configured. */
+export function tokenImageUrl(token: string): string | null {
+  return baseUrl ? `${baseUrl}/image/${token.toLowerCase()}` : null;
+}
+
 /** POST a JSON body to one of the indexer's own routes (indexer/src/api) and return its JSON. */
 export async function indexerPost<T>(path: `/${string}`, body: unknown): Promise<T> {
   if (!baseUrl) throw new Error('Missing EXPO_PUBLIC_INDEXER_URL — see app/.env.example');

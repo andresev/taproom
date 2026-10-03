@@ -28,6 +28,8 @@ const rsun: SafetyFacts = {
   contract: { codeSize: 1991, ownerFunctions: [], riskyFunctions: [] },
   sellSimulation: { outcome: 'sold', lossBps: 198 },
   washActivity: { trades: 144, wallets: 58, topWalletTrades: 8 },
+  // As the indexer returned it: 0.02% of supply in the ten largest wallets.
+  holders: { topTenShareBps: 2 },
   origin: { factory: 'standard', matchesTemplate: true },
   pairAssets: [{ pairToken: '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c', pairSymbol: 'WBNB', kind: 'major' }],
   deployerRecord: {
@@ -192,7 +194,7 @@ describe('washActivityCheck', () => {
 
 describe('checksFromFacts with scoreToken', () => {
   it('scores RSUN as Danger, led by the deployer having sold out', () => {
-    const score = scoreToken(checksFromFacts(rsun, 0.0002));
+    const score = scoreToken(checksFromFacts(rsun));
     expect(score.level).toBe('danger');
     expect(score.reasons[0]).toMatchObject({ id: 'dev-wallet', status: 'fail' });
     expect(score.reasons).toHaveLength(9);
@@ -204,11 +206,11 @@ describe('checksFromFacts with scoreToken', () => {
       devWallet: { ...rsun.devWallet!, sold: '0', firstSellSecondsAfterLaunch: null },
       launchHolders: { ...rsun.launchHolders!, bought: '0', deployerBought: '0', wallets: 0 },
     };
-    expect(scoreToken(checksFromFacts(clean, 0.0002)).level).toBe('safe');
-    expect(scoreToken(checksFromFacts(clean, null)).level).toBe('caution');
-    expect(scoreToken(checksFromFacts({ ...clean, sellSimulation: null }, 0.0002)).level).toBe('caution');
-    expect(scoreToken(checksFromFacts({ ...clean, origin: null }, 0.0002)).level).toBe('caution');
-    expect(scoreToken(checksFromFacts({ ...clean, deployerRecord: null }, 0.0002)).level).toBe('caution');
+    expect(scoreToken(checksFromFacts(clean)).level).toBe('safe');
+    expect(scoreToken(checksFromFacts({ ...clean, holders: null })).level).toBe('caution');
+    expect(scoreToken(checksFromFacts({ ...clean, sellSimulation: null })).level).toBe('caution');
+    expect(scoreToken(checksFromFacts({ ...clean, origin: null })).level).toBe('caution');
+    expect(scoreToken(checksFromFacts({ ...clean, deployerRecord: null })).level).toBe('caution');
   });
 
   it('is never Safe for a token whose code is not its factory\'s template', () => {
@@ -218,11 +220,11 @@ describe('checksFromFacts with scoreToken', () => {
       launchHolders: { ...rsun.launchHolders!, bought: '0', deployerBought: '0', wallets: 0 },
     };
     const off = { ...clean, origin: { factory: 'standard', matchesTemplate: false } };
-    expect(scoreToken(checksFromFacts(off, 0.0002)).level).not.toBe('safe');
+    expect(scoreToken(checksFromFacts(off)).level).not.toBe('safe');
   });
 
   it('is Caution with every input Unknown when the indexer cannot be reached', () => {
-    const score = scoreToken(checksFromFacts(null, null));
+    const score = scoreToken(checksFromFacts(null));
     expect(score.level).toBe('caution');
     expect(score.reasons.every((check) => check.status === 'unknown')).toBe(true);
   });

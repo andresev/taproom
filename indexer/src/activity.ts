@@ -44,4 +44,17 @@ export interface ActivityRow {
   launch: { wallet: `0x${string}`; time: number } | null;
   /** Most recent trade, or the launch if nothing has traded. */
   lastTime: number;
+  /**
+   * The newest trade in the window, by one of `wallets` when the request named
+   * them. Null when the token has only its launch in the window. The amount is in
+   * the pair asset, base units as a string.
+   */
+  latest: {
+    wallet: `0x${string}`;
+    side: "buy" | "sell";
+    pairAmount: string;
+    pairSymbol: string | null;
+    pairDecimals: number;
+    time: number;
+  } | null;
 }

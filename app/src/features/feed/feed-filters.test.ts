@@ -20,6 +20,7 @@ function activity(symbol: string, overrides: Partial<TokenActivity>): TokenActiv
     wallets: [],
     launch: null,
     lastTime: at(0),
+    latest: null,
     ...overrides,
   };
 }
@@ -27,8 +28,8 @@ function activity(symbol: string, overrides: Partial<TokenActivity>): TokenActiv
 const symbols = (list: TokenActivity[]) => list.map((item) => item.tokenSymbol);
 
 describe('applyFeedFilters', () => {
-  it('defaults to trending over 24 hours with no side filter', () => {
-    expect(DEFAULT_FEED_FILTERS).toEqual({ sort: 'trending', window: '24h', buyingOnly: false });
+  it("defaults to everyone's activity, trending, over 24 hours, with no side filter", () => {
+    expect(DEFAULT_FEED_FILTERS).toEqual({ scope: 'trending', sort: 'trending', window: '24h', buyingOnly: false });
   });
 
   it('ranks trending by distinct wallets, then trades, then recency', () => {

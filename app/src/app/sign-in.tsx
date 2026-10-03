@@ -3,31 +3,25 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { Wordmark } from '@/components/wordmark';
 import { SignInOptions } from '@/features/profile/sign-in-options';
 import { Spacing } from '@/theme';
 
-/** The first screen anyone sees: nothing else in the app is reachable until they sign in. */
+/**
+ * The first screen anyone sees: nothing else in the app is reachable until they
+ * sign in. The wordmark, one line on what the app does, and the ways in.
+ */
 export default function SignInScreen() {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.content}>
         <View style={styles.intro}>
-          <ThemedText type="title">Taproom</ThemedText>
-          <ThemedText type="default" themeColor="textSecondary" style={styles.center}>
-            See what the wallets you follow are buying and launching on Brew.
+          <Wordmark />
+          <ThemedText style={styles.line}>
+            See what the wallets you follow buy on Brew, with a record you can check.
           </ThemedText>
         </View>
-
-        <View style={styles.actions}>
-          <SignInOptions />
-          <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
-            Signing in creates a wallet for you inside the app. No seed phrase needed, and you can export your key
-            at any time.
-          </ThemedText>
-          <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
-            Taproom is an independent, community-built app. Not affiliated with Brew.
-          </ThemedText>
-        </View>
+        <SignInOptions />
       </SafeAreaView>
     </ThemedView>
   );
@@ -40,19 +34,16 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'space-between',
-    padding: Spacing.four,
+    paddingHorizontal: Spacing.four,
+    paddingTop: Spacing.six + Spacing.three,
+    paddingBottom: Spacing.four,
   },
   intro: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.three,
+    gap: Spacing.threeHalf,
   },
-  actions: {
-    gap: Spacing.three,
-    paddingBottom: Spacing.three,
-  },
-  center: {
-    textAlign: 'center',
+  line: {
+    fontSize: 20,
+    lineHeight: 27,
+    maxWidth: 300,
   },
 });

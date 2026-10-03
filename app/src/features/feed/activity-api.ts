@@ -17,6 +17,14 @@ export interface ActivityRow {
   wallets: string[];
   launch: { wallet: string; time: number } | null;
   lastTime: number;
+  latest?: {
+    wallet: string;
+    side: 'buy' | 'sell';
+    pairAmount: string;
+    pairSymbol: string | null;
+    pairDecimals: number;
+    time: number;
+  } | null;
 }
 
 export interface ActivityResponse {
@@ -57,6 +65,16 @@ export function toTokenActivities(response: ActivityResponse): TokenActivity[] {
       wallets: row.wallets as Address[],
       launch: row.launch ? { wallet: row.launch.wallet as Address, time: fromUnixSeconds(row.launch.time) } : null,
       lastTime: fromUnixSeconds(row.lastTime),
+      latest: row.latest
+        ? {
+            wallet: row.latest.wallet as Address,
+            side: row.latest.side,
+            pairAmount: BigInt(row.latest.pairAmount),
+            pairSymbol: row.latest.pairSymbol,
+            pairDecimals: row.latest.pairDecimals,
+            time: fromUnixSeconds(row.latest.time),
+          }
+        : null,
     };
   });
 }

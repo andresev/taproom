@@ -49,6 +49,11 @@ export interface SafetyFacts {
     /** Trades made by the single most active wallet. */
     topWalletTrades: number;
   } | null;
+  /** The ten largest holders' share of supply, the token's pools and the burn address left out. */
+  holders: {
+    /** Basis points of total supply: 1,420 is 14.2%. */
+    topTenShareBps: number;
+  } | null;
   /** Which factory launched the token, and whether its code is that factory's template (docs/0014). */
   origin: {
     /** The indexed factory's name; null when the token's factory is not one Taproom knows. */
@@ -92,6 +97,22 @@ export interface SafetyFacts {
     deployerBought: string;
     wallets: number;
   } | null;
+}
+
+/** The conventional burn address. Brew sends the token side of its trading fee here. */
+export const BURN_ADDRESS = "0x000000000000000000000000000000000000dead";
+
+/**
+ * The share of `totalSupply` held by the ten largest of `balances`, in basis
+ * points. `balances` must already leave out the pools and the burn address.
+ * Null when the supply is zero.
+ */
+export function topTenShareBps(balances: bigint[], totalSupply: bigint): number | null {
+  const held = [...balances]
+    .sort((a, b) => (a < b ? 1 : a > b ? -1 : 0))
+    .slice(0, 10)
+    .reduce((total, balance) => total + balance, 0n);
+  return shareBps(held, totalSupply);
 }
 
 /** How many of a deployer's earlier launches are examined, newest first. */

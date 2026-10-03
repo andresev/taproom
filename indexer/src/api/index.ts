@@ -11,6 +11,7 @@ import { pancakeV3PoolSlot0Abi } from "../../abis/pancake-v3-pool";
 import { buildCoverage, withBlockTimes } from "../coverage";
 import { loadEnv } from "../env";
 import { renderNoReceiptPage, renderReceiptPage, TRADE_ID } from "../receipt-page";
+import { imageFromCode, imageRefFromMetadata, sniffImageType } from "../token-image";
 import { recordRequestSchema, toPositions, type LegRow, type RecordResponse, type TokenInfo } from "../record";
 import { safetyRequestSchema, type SafetyFacts } from "../safety";
 import { blockTime, rpc } from "./rpc";
@@ -113,6 +114,32 @@ app.post("/activity", async (c) => {
     )
     .limit(ACTIVITY_LIMIT);
 
+  // The newest trade of each listed token, by the same wallets and in the same window.
+  const tokenAddresses = rows.map((row) => row.tokenAddress);
+  const latestTrades = tokenAddresses.length
+    ? await db
+        .selectDistinctOn([trade.token], {
+          token: trade.token,
+          wallet: trade.wallet,
+          side: trade.side,
+          pairAmount: trade.pairAmountBaseUnits,
+          time: trade.blockTime,
+          pairSymbol: pool.pairSymbol,
+          pairDecimals: pool.pairDecimals,
+        })
+        .from(trade)
+        .innerJoin(pool, eq(pool.address, trade.pool))
+        .where(
+          and(
+            inArray(trade.token, tokenAddresses),
+            gte(trade.blockTime, since),
+            wallets ? inArray(trade.wallet, wallets) : undefined,
+          ),
+        )
+        .orderBy(trade.token, desc(trade.blockTime), desc(trade.logIndex))
+    : [];
+  const latestByToken = new Map(latestTrades.map((item) => [item.token, item]));
+
   const items: ActivityRow[] = rows.map((row) => ({
     tokenAddress: row.tokenAddress,
     tokenSymbol: row.tokenSymbol,
@@ -132,6 +159,17 @@ app.post("/activity", async (c) => {
     wallets: row.wallets ?? [],
     launch: row.launchedAt >= since ? { wallet: row.deployer, time: Number(row.launchedAt) } : null,
     lastTime: Number(row.lastTime),
+    latest: ((item) =>
+      item
+        ? {
+            wallet: item.wallet,
+            side: item.side,
+            pairAmount: item.pairAmount.toString(),
+            pairSymbol: item.pairSymbol,
+            pairDecimals: item.pairDecimals,
+            time: Number(item.time),
+          }
+        : null)(latestByToken.get(row.tokenAddress)),
   }));
 
   console.log(
@@ -307,6 +345,55 @@ app.get("/r/:id", async (c) => {
   // The entry never changes; the current market cap is re-read at most once a minute.
   c.header("Cache-Control", "public, max-age=60");
   return c.html(renderReceiptPage(result.receipt, checkedAt, c.req.url));
+});
+
+/** Token artwork never changes once launched, so each image is read from the chain once. */
+const IMAGE_CACHE_LIMIT = 1_000;
+const imageCache = new Map<string, { type: string; bytes: Uint8Array } | null>();
+
+/**
+ * A token's picture, from its launch metadata: an image contract's code, or an
+ * inline image. Only WebP, PNG and JPEG are served, recognised by their first
+ * bytes, since the content comes from whoever launched the token.
+ */
+app.get("/image/:token", async (c) => {
+  const address = c.req.param("token").toLowerCase();
+  if (!/^0x[0-9a-f]{40}$/.test(address)) return c.body(null, 404);
+
+  let image = imageCache.get(address);
+  if (image === undefined) {
+    const [row] = await db
+      .select({ metadataUri: token.metadataUri })
+      .from(token)
+      .where(eq(token.address, address as `0x${string}`))
+      .limit(1);
+    if (!row) return c.body(null, 404);
+
+    const ref = imageRefFromMetadata(row.metadataUri);
+    let bytes: Uint8Array | null = null;
+    if (ref?.kind === "inline") bytes = ref.bytes;
+    if (ref?.kind === "onchain") {
+      try {
+        const code = await rpc().getCode({ address: ref.address });
+        bytes = code ? imageFromCode(code) : null;
+      } catch {
+        // Not cached: the next request tries the chain again.
+        return c.body(null, 503);
+      }
+    }
+    const type = bytes ? sniffImageType(bytes) : null;
+    image = bytes && type ? { type, bytes } : null;
+    if (imageCache.size >= IMAGE_CACHE_LIMIT) imageCache.delete(imageCache.keys().next().value as string);
+    imageCache.set(address, image);
+  }
+
+  if (!image) return c.body(null, 404);
+  // Copied into a plain buffer, which is what the response body takes.
+  return c.body(new Uint8Array(image.bytes), 200, {
+    "Content-Type": image.type,
+    "Cache-Control": "public, max-age=604800, immutable",
+    "X-Content-Type-Options": "nosniff",
+  });
 });
 
 /** How long one token's facts are reused. The simulation is the costly part. */

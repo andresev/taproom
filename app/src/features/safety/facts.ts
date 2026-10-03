@@ -29,6 +29,8 @@ export interface SafetyFacts {
     wallets: number;
     topWalletTrades: number;
   } | null;
+  /** The ten largest holders' share of supply, pools and burn address left out, in basis points. */
+  holders: { topTenShareBps: number } | null;
   origin: {
     /** The launch factory's name ("standard", "multiPairV1", …); null if not a factory Taproom knows. */
     factory: string | null;

@@ -270,10 +270,11 @@ export function launchHoldersCheck(facts: SafetyFacts['launchHolders']): SafetyC
 }
 
 /**
- * Every check. `facts` is null when the indexer could not be reached, which
- * leaves only holder concentration (computed by the app) possibly known.
+ * Every check. `facts` is null when the indexer could not be reached, and then
+ * every check is Unknown.
  */
-export function checksFromFacts(facts: SafetyFacts | null, topTenHolderShare: number | null): SafetyCheck[] {
+export function checksFromFacts(facts: SafetyFacts | null): SafetyCheck[] {
+  const topTenHolderShare = facts?.holders ? facts.holders.topTenShareBps / 10_000 : null;
   return [
     originCheck(facts?.origin ?? null),
     deployerRecordCheck(facts?.deployerRecord ?? null),

@@ -3,7 +3,11 @@ import type { TokenActivity } from './types';
 export type FeedSort = 'trending' | 'latest' | 'launches';
 export type FeedWindow = '1h' | '6h' | '24h' | '7d' | '30d';
 
+/** Whose activity the feed shows: every wallet's, or only the wallets the user follows. */
+export type FeedScope = 'trending' | 'following';
+
 export interface FeedFilters {
+  scope: FeedScope;
   sort: FeedSort;
   window: FeedWindow;
   /** Only tokens with more buying than selling in the window. */
@@ -11,7 +15,7 @@ export interface FeedFilters {
 }
 
 /** What the Feed tab shows until the user changes it. */
-export const DEFAULT_FEED_FILTERS: FeedFilters = { sort: 'trending', window: '24h', buyingOnly: false };
+export const DEFAULT_FEED_FILTERS: FeedFilters = { scope: 'trending', sort: 'trending', window: '24h', buyingOnly: false };
 
 export const WINDOW_SECONDS: Record<FeedWindow, number> = {
   '1h': 60 * 60,

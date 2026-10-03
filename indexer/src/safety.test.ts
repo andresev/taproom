@@ -2,7 +2,15 @@ import { toFunctionSelector } from "viem";
 import { describe, expect, it } from "vitest";
 import { FACTORIES } from "./factories";
 import { RSUN_CODE, SUPER_INU_CODE } from "./fixtures/token-code";
-import { lastToFirstPriceBps, matchesTemplate, roundTripLossBps, safetyRequestSchema, scanBytecode, shareBps } from "./safety";
+import {
+  lastToFirstPriceBps,
+  matchesTemplate,
+  roundTripLossBps,
+  safetyRequestSchema,
+  scanBytecode,
+  shareBps,
+  topTenShareBps,
+} from "./safety";
 
 const push4 = (signature: string) => `63${toFunctionSelector(signature).slice(2)}`;
 
@@ -148,5 +156,22 @@ describe("shareBps", () => {
 
   it("is null when there is nothing to divide by", () => {
     expect(shareBps(5n, 0n)).toBeNull();
+  });
+});
+
+describe("topTenShareBps", () => {
+  it("adds the ten largest balances as a share of supply", () => {
+    const balances = [50n, 40n, 30n, 20n, 10n, 9n, 8n, 7n, 6n, 5n, 4n, 3n];
+    // The two smallest, 4 and 3, are left out: 185 of 1,000.
+    expect(topTenShareBps(balances, 1000n)).toBe(1850);
+  });
+
+  it("does not depend on the order given", () => {
+    expect(topTenShareBps([1n, 300n, 2n], 1000n)).toBe(3030);
+  });
+
+  it("is zero with no holders and null with no supply", () => {
+    expect(topTenShareBps([], 1000n)).toBe(0);
+    expect(topTenShareBps([5n], 0n)).toBeNull();
   });
 });

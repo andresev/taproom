@@ -23,4 +23,14 @@ export interface TokenActivity {
   launch: { wallet: Address; time: Date } | null;
   /** Most recent trade, or the launch if nothing has traded. */
   lastTime: Date;
+  /** The newest trade in the window, by a followed wallet in the Following feed. Null when only the launch is in the window. */
+  latest: {
+    wallet: Address;
+    side: 'buy' | 'sell';
+    /** Pair-asset base units. */
+    pairAmount: bigint;
+    pairSymbol: string | null;
+    pairDecimals: number;
+    time: Date;
+  } | null;
 }

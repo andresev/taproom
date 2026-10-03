@@ -6,7 +6,7 @@ import { ActivityIndicator, Platform, StyleSheet, View, useColorScheme } from 'r
 import { Button } from '@/components/button';
 import { ThemedText } from '@/components/themed-text';
 import { appleSignInEnabled } from '@/lib/api/privy';
-import { Spacing } from '@/theme';
+import { Radius, Spacing } from '@/theme';
 
 import { useAuthStore } from './auth-store';
 
@@ -73,16 +73,16 @@ export function SignInOptions() {
               ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
               : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
           }
-          cornerRadius={Spacing.three}
+          cornerRadius={Radius.control}
           style={[styles.apple, busy && styles.busy]}
           onPress={() => {
             if (!busy) void signIn('apple');
           }}
         />
       ) : (
-        <Button label="Continue with Apple" onPress={() => void signIn('apple')} disabled={busy} />
+        <Button label="Continue with Apple" size="large" onPress={() => void signIn('apple')} disabled={busy} />
       )}
-      <Button label="Continue with Google" onPress={() => void signIn('google')} loading={busy} />
+      <Button label="Continue with Google" kind="primary" size="large" onPress={() => void signIn('google')} loading={busy} />
       {failure ? (
         <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
           {failure}
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
   },
   apple: {
-    height: 48,
+    height: 52,
   },
   busy: {
     opacity: 0.5,

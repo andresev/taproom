@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatMultiple, formatPoolFee, formatPrice, formatTimeAgo, formatUtcDateTime, formatTokenAmount, formatUsdCompact, shortAddress } from './format.js';
+import { formatMultiple, formatPoolFee, formatPrice, formatTimeAgo, formatUtcDateTime, formatTokenAmount, formatUsdCompact, pairAssetLabel, shortAddress } from './format.js';
 
 describe('shortAddress', () => {
   it('shortens an address', () => {
@@ -40,6 +40,19 @@ describe('formatUsdCompact', () => {
   it('shows a dash for unusable values', () => {
     expect(formatUsdCompact(Number.NaN)).toBe('—');
     expect(formatUsdCompact(-1)).toBe('—');
+  });
+});
+
+describe('pairAssetLabel', () => {
+  it('shows wrapped BNB as BNB and leaves other assets alone', () => {
+    expect(pairAssetLabel('WBNB')).toBe('BNB');
+    expect(pairAssetLabel('BREW')).toBe('BREW');
+    expect(pairAssetLabel('USDT')).toBe('USDT');
+  });
+
+  it('falls back when a pair token reports no symbol', () => {
+    expect(pairAssetLabel(null)).toBe('pair asset');
+    expect(pairAssetLabel(null, '0x8fa3…7598')).toBe('0x8fa3…7598');
   });
 });
 

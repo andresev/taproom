@@ -1,15 +1,21 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 
 import { useTheme } from '@/hooks/use-theme';
+import { Fonts } from '@/theme';
 
+/** The four tabs. Brass marks the active one; the rest are quiet. */
 export default function AppTabs() {
   const colors = useTheme();
 
   return (
     <NativeTabs
-      backgroundColor={colors.background}
-      indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}>
+      backgroundColor={colors.card}
+      tintColor={colors.accentText}
+      indicatorColor={colors.cardPressed}
+      labelStyle={{
+        default: { color: colors.textSecondary, fontFamily: Fonts.semibold },
+        selected: { color: colors.accentText, fontFamily: Fonts.semibold },
+      }}>
       <NativeTabs.Trigger name="feed">
         <NativeTabs.Trigger.Label>Feed</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="list.bullet" md="list" />
@@ -22,7 +28,7 @@ export default function AppTabs() {
 
       <NativeTabs.Trigger name="portfolio">
         <NativeTabs.Trigger.Label>Portfolio</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="chart.pie" md="pie_chart" />
+        <NativeTabs.Trigger.Icon sf="wallet.bifold" md="account_balance_wallet" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="profile">
