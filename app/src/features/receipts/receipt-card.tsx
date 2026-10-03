@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
+import { Wordmark } from '@/components/wordmark';
 import { useTheme } from '@/hooks/use-theme';
 import {
   formatMultiple,
@@ -15,10 +16,13 @@ import type { Receipt } from './receipt';
 import { receiptPageUrl } from './receipt-link';
 
 // The card is shared as an image, so it has its own fixed colours rather than
-// the device theme: a paper slip that looks the same from any phone.
-const PAPER = '#F1ECDD';
-const INK = '#22231D';
-const MUTED = '#5E6054';
+// the device theme: a black slip with a gold edge that looks the same from any
+// phone, in the logo's colours.
+const CARD = '#0B0B0A';
+const INK = '#F4F0E4';
+const MUTED = '#B5AF9C';
+const GOLD = '#E6C780';
+const EDGE = '#8C6A22';
 /** How many punched holes run along the slip's top and bottom edges. */
 const HOLES = 17;
 
@@ -43,7 +47,7 @@ function Perforation({ edge, color }: { edge: 'top' | 'bottom'; color: string })
 }
 
 /**
- * The shareable receipt, drawn as a printed bar tab. It only prints the receipt
+ * The shareable receipt, drawn as a bar tab in black and gold. It only prints the receipt
  * it is given; it has no inputs and no state, so nothing on it can be edited.
  * It states that the wallet bought the token at that time and price, and nothing
  * about still holding it or making a profit. When a public receipt page is
@@ -61,8 +65,8 @@ export function ReceiptCard({ receipt }: { receipt: Receipt }) {
       <Perforation edge="top" color={theme.background} />
       <Perforation edge="bottom" color={theme.background} />
 
-      <View style={styles.between}>
-        <Text style={styles.brand}>taproom</Text>
+      <View style={styles.header}>
+        <Wordmark size={18} on="dark" tile={false} />
         <Text style={styles.kind}>RECEIPT</Text>
       </View>
       <View style={styles.dash} />
@@ -94,8 +98,8 @@ export function ReceiptCard({ receipt }: { receipt: Receipt }) {
       <Line label="TX" value={shortAddress(receipt.txHash, 8)} />
       {pageUrl ? (
         <View style={styles.verify}>
-          {/* Dark on light with a quiet zone: what every QR scanner reads. */}
-          <QRCode value={pageUrl} size={88} color={INK} backgroundColor={PAPER} quietZone={2} ecl="M" />
+          {/* Dark on light with a quiet zone: what every QR scanner reads, so it is not inverted to match the card. */}
+          <QRCode value={pageUrl} size={88} color={CARD} backgroundColor={INK} quietZone={4} ecl="M" />
           <View style={styles.verifyText}>
             <Text style={styles.check}>Check this receipt</Text>
             <Text style={styles.link}>{pageUrl.replace(/^https?:\/\//, '')}</Text>
@@ -118,7 +122,9 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
     paddingHorizontal: Spacing.threeHalf,
     paddingVertical: Spacing.four + 2,
-    backgroundColor: PAPER,
+    backgroundColor: CARD,
+    borderWidth: 1,
+    borderColor: EDGE,
   },
   perforation: {
     position: 'absolute',
@@ -145,14 +151,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: Spacing.twoHalf,
   },
-  brand: {
-    color: INK,
-    fontFamily: Fonts.bold,
-    fontSize: 17,
-    letterSpacing: -0.5,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.twoHalf,
   },
   kind: {
-    color: MUTED,
+    color: GOLD,
     fontFamily: Fonts.mono,
     fontSize: 11,
     letterSpacing: 1.4,
@@ -193,7 +199,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   multiple: {
-    color: INK,
+    color: GOLD,
     fontFamily: Fonts.monoSemibold,
     fontSize: 40,
     lineHeight: 44,

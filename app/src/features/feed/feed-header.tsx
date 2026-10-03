@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Chip } from '@/components/chip';
+import { GoldTitle } from '@/components/gold';
 import { Segmented } from '@/components/segmented';
 import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
@@ -30,7 +31,7 @@ export function FeedHeader() {
     <View style={styles.container}>
       <View style={styles.titleRow}>
         <View style={styles.titles}>
-          <ThemedText type="title">On tap</ThemedText>
+          <GoldTitle text="On tap" size={26} />
           <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
             Brew tokens · {SORT_LABELS[sort].toLowerCase()} · last {window}
             {buyingOnly ? ' · more buying' : ''}

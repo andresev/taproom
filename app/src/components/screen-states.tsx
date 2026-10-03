@@ -1,5 +1,5 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import Svg, { Circle, Path, Rect } from 'react-native-svg';
+import Svg, { Circle, G, Path } from 'react-native-svg';
 
 import { Button } from '@/components/button';
 import { Icon } from '@/components/icon';
@@ -25,9 +25,13 @@ function Coaster() {
     <Svg width={88} height={88} viewBox="0 0 88 88" fill="none" accessible={false}>
       <Circle cx="44" cy="44" r="42" stroke={theme.border} strokeWidth={2} />
       <Circle cx="44" cy="44" r="33" stroke={theme.border} strokeWidth={2} strokeDasharray="2 6" />
-      <Rect x="40" y="24" width="8" height="16" rx="4" fill={theme.textSecondary} />
-      <Rect x="37" y="41" width="14" height="4" rx="2" fill={theme.textSecondary} />
-      <Path d="M30 47h28v7H48v5h-8v-5H30z" fill={theme.textSecondary} />
+      {/* The mark's shapes (components/wordmark.tsx), small and in one quiet colour. */}
+      <G transform="matrix(0.42 0 -0.1047 0.42 26.78 22.58)" fill={theme.textSecondary}>
+        <Path d="M12 16H66a20 20 0 0 1 20 20V50H71V38a7 7 0 0 0-7-7H12z" />
+        <Path d="M34 37h15v49H34z" />
+        <Path d="M53 37h7v38h-7z" />
+        <Path d="M78.5 56c0 0-6 7-6 11.5a6 6 0 0 0 12 0c0-4.5-6-11.5-6-11.5z" />
+      </G>
     </Svg>
   );
 }

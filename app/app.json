@@ -23,7 +23,7 @@
     "android": {
       "package": "com.andresvaldez.taproom",
       "adaptiveIcon": {
-        "backgroundColor": "#E6C780",
+        "backgroundColor": "#050505",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -41,7 +41,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#111210",
+          "backgroundColor": "#070706",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 96
         }

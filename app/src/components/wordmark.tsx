@@ -1,35 +1,56 @@
 import { StyleSheet, View } from 'react-native';
-import Svg, { Path, Rect } from 'react-native-svg';
+import Svg, { Defs, G, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
-import { ThemedText } from '@/components/themed-text';
-import { useTheme } from '@/hooks/use-theme';
-import { Fonts } from '@/theme';
+import { GoldTitle } from '@/components/gold';
+import { Brand } from '@/theme';
 
 /**
- * Taproom's own mark: a tap handle over a spout, on a rounded brass tile. It is
- * not Brew's logo, and nothing of Brew's is used (CLAUDE.md).
+ * Taproom's own mark: a "T" whose crossbar ends in a tap spout, with one drop,
+ * in brushed gold on a black tile. Its colours are fixed, the same in both
+ * themes. It is not Brew's logo, and nothing of Brew's is used (CLAUDE.md).
+ *
+ * The shapes are drawn upright on a 100-unit grid; the matrix slants them 14
+ * degrees and centres them on the tile. `app/scripts/render-icons.py` draws the
+ * app icon from the same shapes: change both together.
  */
-export function Mark({ size = 40 }: { size?: number }) {
-  const theme = useTheme();
+export function Mark({ size = 40, tile = true }: { size?: number; tile?: boolean }) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 64 64" accessibilityLabel="Taproom">
-      <Rect width="64" height="64" rx="15" fill={theme.accent} />
-      <Rect x="27" y="9" width="10" height="21" rx="5" fill={theme.onAccent} />
-      <Rect x="23" y="31" width="18" height="5" rx="2" fill={theme.onAccent} />
-      <Path d="M15 38h34v9H37v6h-10v-6H15z" fill={theme.onAccent} />
-      <Rect x="22" y="55" width="20" height="3" rx="1.5" fill={theme.onAccent} />
+    <Svg width={size} height={size} viewBox="0 0 100 100" accessibilityLabel="Taproom">
+      <Defs>
+        <LinearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+          {Brand.gold.map((stop) => (
+            <Stop key={stop.offset} offset={stop.offset} stopColor={stop.color} />
+          ))}
+        </LinearGradient>
+        <LinearGradient id="pale" x1="0" y1="0" x2="1" y2="1">
+          {Brand.pale.map((stop) => (
+            <Stop key={stop.offset} offset={stop.offset} stopColor={stop.color} />
+          ))}
+        </LinearGradient>
+      </Defs>
+      {tile ? <Rect width="100" height="100" rx="23" fill={Brand.black} /> : null}
+      <G transform="matrix(0.88 0 -0.2194 0.88 13.92 5.12)">
+        <Path d="M12 16H66a20 20 0 0 1 20 20V50H71V38a7 7 0 0 0-7-7H12z" fill="url(#gold)" />
+        <Path d="M34 37h15v49H34z" fill="url(#gold)" />
+        <Path d="M53 37h7v38h-7z" fill="url(#pale)" />
+        <Path
+          d="M78.5 56c0 0-6 7-6 11.5a6 6 0 0 0 12 0c0-4.5-6-11.5-6-11.5z"
+          fill="url(#pale)"
+        />
+      </G>
     </Svg>
   );
 }
 
-/** The mark with the name beside it, set in lowercase. */
-export function Wordmark({ size = 34 }: { size?: number }) {
+/**
+ * The mark with the name beside it, in gold. `on` is the background it sits on,
+ * the phone's theme unless given; on black the mark needs no tile.
+ */
+export function Wordmark({ size = 34, on, tile = true }: { size?: number; on?: 'dark' | 'light'; tile?: boolean }) {
   return (
-    <View style={[styles.wordmark, { gap: size * 0.36 }]}>
-      <Mark size={size * 1.25} />
-      <ThemedText style={{ fontFamily: Fonts.bold, fontSize: size, lineHeight: size * 1.15, letterSpacing: -size * 0.03 }}>
-        taproom
-      </ThemedText>
+    <View style={[styles.wordmark, { gap: size * (tile ? 0.36 : 0.2) }]}>
+      <Mark size={size * 1.25} tile={tile} />
+      <GoldTitle text="Taproom" size={size} on={on} />
     </View>
   );
 }

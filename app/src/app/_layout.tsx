@@ -2,8 +2,9 @@ import { PrivyProvider } from '@privy-io/expo';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
-import { useColorScheme } from 'react-native';
+import { StyleSheet, View, useColorScheme } from 'react-native';
 
+import { TopGlow } from '@/components/gold';
 import { LoadingState } from '@/components/screen-states';
 import { useAuthStore } from '@/features/profile/auth-store';
 import { useAuthBridge } from '@/features/profile/use-auth-bridge';
@@ -74,9 +75,18 @@ export default function RootLayout() {
     <PrivyProvider appId={privyAppId} clientId={privyClientId} supportedChains={[...privyChains]}>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider value={navigationTheme}>
-          <Screens />
+          <View style={styles.root}>
+            <Screens />
+            <TopGlow />
+          </View>
         </ThemeProvider>
       </QueryClientProvider>
     </PrivyProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+});

@@ -3,24 +3,26 @@
  * families, spacing on a 4pt grid and corner sizes. Screens style through these,
  * never with literal colours or font names.
  *
- * The look is flat: surfaces separated by hairline borders, no shadows, glows or
- * gradients. Brass is kept for the primary action and the active tab.
+ * Black and gold, to match the logo. Working surfaces are flat: cards, rows and
+ * numbers are separated by gold-tinted hairlines and carry no gradients. Brushed
+ * gold (`Brand`) is kept for the logo, the primary action, the two gold titles,
+ * the sign-in screen and the receipt card.
  */
 
 import './global.css';
 
 export const Colors = {
   dark: {
-    background: '#111210',
-    card: '#1B1C19',
-    cardPressed: '#23251F',
-    text: '#F6F3E9',
-    textSecondary: '#A2A69A',
-    /** Hairlines: white at 9%. */
-    border: 'rgba(255,255,255,0.09)',
-    /** The one accent, a soft brass. Fills take `onAccent` text. */
+    background: '#070706',
+    card: '#11110F',
+    cardPressed: '#1B1A16',
+    text: '#F4F0E4',
+    textSecondary: '#A6A294',
+    /** Hairlines: the accent gold at 16%. */
+    border: 'rgba(230,199,128,0.16)',
+    /** The one accent, a soft gold. Fills take `onAccent` text. */
     accent: '#E6C780',
-    onAccent: '#211F16',
+    onAccent: '#1A1508',
     /** Brass as text or an outline on this theme's background. */
     accentText: '#E6C780',
     /** Buy and sell, and the four safety states. Always paired with a word or an icon, never colour alone. */
@@ -29,12 +31,12 @@ export const Colors = {
     safe: '#7EE0A6',
     caution: '#EDB866',
     danger: '#F99797',
-    unknown: '#A2A69A',
+    unknown: '#A6A294',
     /** Behind a bottom sheet. */
-    scrim: 'rgba(0,0,0,0.6)',
+    scrim: 'rgba(0,0,0,0.7)',
     // Names from before docs/0020, kept until every screen has moved to the ones above.
-    backgroundElement: '#1B1C19',
-    backgroundSelected: '#23251F',
+    backgroundElement: '#11110F',
+    backgroundSelected: '#1B1A16',
   },
   light: {
     background: '#F7F6F1',
@@ -43,9 +45,10 @@ export const Colors = {
     text: '#25291F',
     /** Darker than the brief's #717567, which fell just under 4.5:1 on the background. */
     textSecondary: '#6A6E60',
-    border: 'rgba(37,41,31,0.12)',
+    /** Hairlines: a dark gold at 20%. */
+    border: 'rgba(121,96,31,0.20)',
     accent: '#E6C780',
-    onAccent: '#211F16',
+    onAccent: '#1A1508',
     accentText: '#79601F',
     buy: '#247044',
     sell: '#B13E36',
@@ -57,6 +60,54 @@ export const Colors = {
     backgroundElement: '#FFFEFA',
     backgroundSelected: '#F0EEE5',
   },
+} as const;
+
+/**
+ * The brushed gold, as gradient stops.
+ * - `gold` and `pale` fill the logo, the same in both themes, each running from
+ *   a shape's top left to its bottom right. `app/scripts/render-icons.py` draws
+ *   the app icon from the same values.
+ * - `fill` runs left to right across the primary button, under `onAccent` text.
+ * - `lettering` runs left to right across a gold title: bright on a dark
+ *   background, deep on a light one so it stays readable.
+ */
+export const Brand = {
+  black: '#050505',
+  gold: [
+    { offset: 0, color: '#FBEFB9' },
+    { offset: 0.22, color: '#E6C780' },
+    { offset: 0.5, color: '#9C7526' },
+    { offset: 0.74, color: '#F1DA96' },
+    { offset: 1, color: '#7C5C1A' },
+  ],
+  pale: [
+    { offset: 0, color: '#FFFFFF' },
+    { offset: 0.6, color: '#F5EBC8' },
+    { offset: 1, color: '#D9C283' },
+  ],
+  fill: [
+    { offset: 0, color: '#FBEFB9' },
+    { offset: 0.32, color: '#E6C780' },
+    { offset: 0.62, color: '#C9A24D' },
+    { offset: 1, color: '#F1DA96' },
+  ],
+  fillBorder: '#C9A24D',
+  lettering: {
+    dark: [
+      { offset: 0, color: '#FBEFB9' },
+      { offset: 0.3, color: '#E6C780' },
+      { offset: 0.55, color: '#A9812F' },
+      { offset: 0.78, color: '#F1DA96' },
+      { offset: 1, color: '#8C6A22' },
+    ],
+    light: [
+      { offset: 0, color: '#8C6A22' },
+      { offset: 0.5, color: '#5E4311' },
+      { offset: 1, color: '#9C7526' },
+    ],
+  },
+  /** The soft light behind the mark and at the top of dark screens. */
+  glow: '#E6C780',
 } as const;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;

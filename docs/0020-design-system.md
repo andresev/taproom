@@ -99,4 +99,38 @@ written brief and a set of mockups (49 artboards, dark and light).
   A one-tap copy needs a clipboard module, which is a new dependency and has not
   been approved.
 - Still true: none of it has been reviewed on the phone by the owner yet.
-
+- 2026-10-03: the owner chose a new logo from thirty brushed-gold concepts: a
+  "T" whose crossbar ends in a tap spout, with one drop, gold on black. It
+  replaces the tap handle on brass, and it is the one exception to "no
+  gradients": the rest of the app is still flat.
+  - The mark's colours are fixed in both themes (`Brand` in `app/src/theme`).
+  - `app/src/components/wordmark.tsx` and `app/scripts/render-icons.py` draw the
+    same shapes; change both together.
+  - The wordmark is now "Taproom", capitalised.
+  - The app icon is the mark on black with a soft gold light behind it; the
+    Android icon's background is black; the splash shows the mark alone.
+  - Not yet seen on the phone: the icon and splash are native, so they need a
+    rebuild.
+- 2026-10-03: the theme now matches the logo, chosen by the owner from a mockup
+  set ("Set 3: gold theme"). This replaces "flat surfaces … no shadows, glows or
+  gradients" above with: flat working surfaces, brushed gold in a few named
+  places.
+  - **Colours:** the dark theme is true black (`#070706`) with gold-tinted
+    hairlines; the light theme keeps its colours and takes a gold-tinted
+    hairline. Buy, sell and the safety colours are unchanged.
+  - **Gold gradients are used only for:** the logo, the primary button, the
+    titles "Taproom" and "On tap", the sign-in screen, and a faint light at the
+    top of dark screens. Cards, rows and numbers stay flat.
+  - **Gold titles are outlines, not text.** React Native text cannot take a
+    gradient without a masking library, so the two phrases were read from the
+    Geist Bold font file into `app/src/components/gold-lettering.ts`. No package
+    was added. A new gold title needs its outline added there.
+  - **Sign-in:** the mark with a glow, the name in gold and sweeping gold lines.
+  - **Receipt card:** a black slip with a gold edge, the gold wordmark and the
+    multiple in gold, in place of the paper tab. The QR code stays dark on light
+    so that scanners read it. The multiple is solid gold, not a gradient, since
+    it is live text.
+  - **The splash background** is the new black.
+  - The indexer's public receipt page keeps its own plain styling.
+  - Not yet seen on the phone. Contrast was checked in the mockups: secondary
+    text on black is 7.9:1 and button text on the darkest gold is 7.6:1.
