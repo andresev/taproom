@@ -1,4 +1,4 @@
-# Research: competitive landscape and what makes Taproom different
+# Research: competitive landscape and what makes Tapped different
 
 Date: 2026-10-02. Status: adopted in 0011 the same day. Written as findings for
 review; the text below is as written then, except where "Since then" says otherwise.
@@ -31,7 +31,7 @@ checking against the contracts.
 - A second domain, brewfamily.dev, shows the same page title as brew.family. I
   could not tell whether it is official. Treat it as unverified.
 
-## 2. Who already does what Taproom does
+## 2. Who already does what Tapped does
 
 | Product | BSC | Mobile app | Follow + feed | One-tap buy | Safety checks | Wallet model |
 |---|---|---|---|---|---|---|
@@ -46,8 +46,8 @@ What this means:
 - **Brew tokens are ordinary PancakeSwap V3 pools, so every BSC terminal can
   already trade them.** News coverage of $BREW cites GMGN data. Brew has no
   technical barrier that keeps incumbents out.
-- **ADR 0007 moved Taproom to Fomo's wallet model.** Fomo already covers BNB
-  Chain. As specified today, Taproom's core loop is Fomo's core loop restricted to
+- **ADR 0007 moved Tapped to Fomo's wallet model.** Fomo already covers BNB
+  Chain. As specified today, Tapped's core loop is Fomo's core loop restricted to
   one launchpad. "External wallet, we never touch keys" is no longer a difference.
 - I found no social app or tracker built specifically for Brew. That gap is real
   but it is a head start, not a moat.
@@ -81,16 +81,16 @@ What this means:
   region. Google confirmed non-custodial wallets are outside its licensing rule.
 - **Rewards.** 3.1.5(v) bars paying crypto for tasks such as inviting users or
   posting. That limits referral and season reward designs.
-- **Platform dependency.** Taproom's ceiling is Brew's volume. Brew is four weeks
+- **Platform dependency.** Tapped's ceiling is Brew's volume. Brew is four weeks
   old, has an anonymous team, and is smaller than Flap.
 - **Holder rewards.** Some Brew tokens route fees to holders, and Flap tokens pay
-  stock dividends. CLAUDE.md bans Taproom itself from doing this, but says nothing
+  stock dividends. CLAUDE.md bans Tapped itself from doing this, but says nothing
   about displaying or trading third-party tokens that do.
 
 ## 5. Proposed CLAUDE.md changes
 
 1. **Add a "Positioning" section.** Name Fomo, GMGN and Axiom as the incumbents.
-   State that Taproom does not compete on execution speed or terminal features.
+   State that Tapped does not compete on execution speed or terminal features.
    State the two things it must be best at: provable records (receipts and trader
    track records) and Brew-specific deployer reputation.
 2. **Update "Brew context."** Add: launched September 2026; up to five pools per
@@ -115,7 +115,7 @@ What this means:
 7. **Add a data-model note:** keep the indexer's launch and pool tables free of
    Brew-only assumptions, so a second launchpad (Flap, Four.meme) could be added
    without a rewrite. Not v1 work.
-8. **Tighten the Taproom token note:** rewards must not pay users for inviting or
+8. **Tighten the Tapped token note:** rewards must not pay users for inviting or
    posting (3.1.5(v)).
 
 ## Not verified

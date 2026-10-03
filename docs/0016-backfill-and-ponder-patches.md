@@ -40,7 +40,7 @@ Ponder only shrinks block ranges on error; it never splits an address list. Pond
 ## Decisions
 
 - **Ponder is patched with `patch-package`** (new root dev dependency, run on
-  `postinstall`). The patches are in `patches/`, each change marked "Taproom patch
+  `postinstall`). The patches are in `patches/`, each change marked "Tapped patch
   (docs/0016)":
   1. `ponder` `internal/options.js`: the threshold above which factory children
      are no longer listed goes from 1,000 to 100,000, so requests stay filtered by

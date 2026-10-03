@@ -78,8 +78,8 @@ launched token of one pool and the pair token of another.
 ## Still open
 
 - The standard factory's deployment block.
-- Whether Taproom shows tokens from Brew's dividend factory, given the "no dividends
-  to token holders" rule in CLAUDE.md is about Taproom's own offering.
+- Whether Tapped shows tokens from Brew's dividend factory, given the "no dividends
+  to token holders" rule in CLAUDE.md is about Tapped's own offering.
 - Which PancakeSwap router the swap flow uses (step 5).
 
 ## Since then

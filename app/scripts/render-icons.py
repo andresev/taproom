@@ -1,4 +1,4 @@
-"""Renders Taproom's mark to the PNG files in assets/images (run: python3 scripts/render-icons.py assets/images).
+"""Renders Tapped's mark to the PNG files in assets/images (run: python3 scripts/render-icons.py assets/images).
 
 The mark is a "T" whose crossbar ends in a tap spout, with one drop, in brushed gold on black. It is drawn upright on a
 100-unit grid, slanted 14 degrees, and filled with gradients that run from each shape's top left to its bottom right.

@@ -1,4 +1,4 @@
-# 0001: Realign the repo from the Solana tracker to Taproom
+# 0001: Realign the repo from the Solana tracker to Tapped
 
 Date: 2026-10-01. Status: accepted.
 
@@ -6,7 +6,7 @@ Date: 2026-10-01. Status: accepted.
 
 The repo was scaffolded as a read-only social layer for Solana traders: a Fastify
 server receiving Helius webhooks, SPL swap parsing, and a Supabase schema keyed by
-Solana transaction signature. CLAUDE.md now defines a different product: Taproom, a
+Solana transaction signature. CLAUDE.md now defines a different product: Tapped, a
 social trading app for the Brew launchpad on BNB Smart Chain, with in-app swaps from
 the user's own wallet.
 
@@ -51,6 +51,8 @@ the user's own wallet.
 - 2026-10-02: the PancakeSwap router and quoter were confirmed in 0008.
 - 2026-10-02: the iOS bundle identifier is still the placeholder. 0011 lists a real
   one as a requirement before the first release build.
-- 2026-10-02: the bundle identifier is now `com.andresvaldez.taproom`. The stale `ios/`
+- 2026-10-02: the bundle identifier is now `com.andresvaldez.tapped`. The stale `ios/`
   folder at the repo root, generated before the Expo project moved to `app/`, was
-  removed, and the local Supabase project ID is now `taproom`.
+  removed, and the local Supabase project ID is now `tapped`.
+- 2026-10-03: the app was renamed from its earlier name (0021). This record, its file name included, now uses the
+  new name and the new identifiers throughout.

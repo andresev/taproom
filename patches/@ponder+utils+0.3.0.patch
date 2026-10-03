@@ -6,7 +6,7 @@ index 0741023..8c84ea7 100644
        };
      }
    }
-+  // Taproom patch (docs/0016): NodeReal's limit counts blocks, so a range of
++  // Tapped patch (docs/0016): NodeReal's limit counts blocks, so a range of
 +  // 50,000 blocks is a toBlock - fromBlock of 49,999. Its message would match the
 +  // rule below, which allows one block too many, so it is handled first.
 +  match = sError.match(/exceed maximum block range: ([\d,.]+)/);
@@ -31,7 +31,7 @@ index 0741023..8c84ea7 100644
      sError.includes("backend response too large") || // llamarpc, ankr, altitude
      sError.includes("query exceeds max results") || // arbitrum
 -    /logs matched by query exceeds limit of \d+/.test(sError) || // zkevm
-+    /logs matched by query exceeds limit of \d+/.test(sError) || // Taproom patch (docs/0016): NodeReal
++    /logs matched by query exceeds limit of \d+/.test(sError) || // Tapped patch (docs/0016): NodeReal
 +    /logs count exceeds the limit \d+/.test(sError) || // zkevm
      /query returned more than \d+ results/.test(sError) || // 1rpc
      /response size should not greater than \d+ bytes/.test(sError) || // drpc
@@ -44,7 +44,7 @@ index b6a510d..6e69734 100644
        };
      }
    }
-+  // Taproom patch (docs/0016): NodeReal's limit counts blocks, so a range of
++  // Tapped patch (docs/0016): NodeReal's limit counts blocks, so a range of
 +  // 50,000 blocks is a toBlock - fromBlock of 49,999. Its message would match the
 +  // rule below, which allows one block too many, so it is handled first.
 +  match = sError.match(/exceed maximum block range: ([\d,.]+)/);
@@ -69,7 +69,7 @@ index b6a510d..6e69734 100644
      sError.includes("backend response too large") || // llamarpc, ankr, altitude
      sError.includes("query exceeds max results") || // arbitrum
 -    /logs matched by query exceeds limit of \d+/.test(sError) || // zkevm
-+    /logs matched by query exceeds limit of \d+/.test(sError) || // Taproom patch (docs/0016): NodeReal
++    /logs matched by query exceeds limit of \d+/.test(sError) || // Tapped patch (docs/0016): NodeReal
 +    /logs count exceeds the limit \d+/.test(sError) || // zkevm
      /query returned more than \d+ results/.test(sError) || // 1rpc
      /response size should not greater than \d+ bytes/.test(sError) || // drpc

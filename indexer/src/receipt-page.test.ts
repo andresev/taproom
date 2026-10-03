@@ -51,13 +51,13 @@ describe("renderReceiptPage", () => {
     expect(html).toContain("Market cap now was read at 2026-10-02 21:00 UTC");
   });
 
-  it("says what a receipt proves and what it does not, and that Taproom is not Brew", () => {
+  it("says what a receipt proves and what it does not, and that Tapped is not Brew", () => {
     expect(html).toContain("It does not show whether the wallet still holds the token or made a profit.");
     expect(html).toContain("Not affiliated with Brew.");
   });
 
   it("gives link previews a title, a description and its own address", () => {
-    expect(html).toContain("<title>RSUN receipt · Taproom</title>");
+    expect(html).toContain("<title>RSUN receipt · Tapped</title>");
     expect(html).toContain(`<meta property="og:url" content="${url}">`);
     expect(html).toContain("bought 68,947.7985 RSUN for 0.001287 WBNB");
   });

@@ -56,7 +56,7 @@ export function WalletHeader({ address }: { address: Address }) {
         {name ? <ThemedText type="subhead">{name}</ThemedText> : <ThemedText type="mono">{shortAddress(address)}</ThemedText>}
         <ExternalLink href={bscscanAddressUrl(address)}>
           <ThemedText type="small" themeColor="textSecondary">
-            {name ? `${shortAddress(address)} · ` : profile.data === null ? 'No Taproom profile · ' : ''}
+            {name ? `${shortAddress(address)} · ` : profile.data === null ? 'No Tapped profile · ' : ''}
             {followers.data === 1 ? '1 follower' : `${followers.data} followers`}
           </ThemedText>
         </ExternalLink>

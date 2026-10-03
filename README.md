@@ -1,14 +1,14 @@
-# Taproom
+# Tapped
 
 A social trading app for the Brew token launchpad on BNB Smart Chain. Follow
 wallets, see what they buy and launch on Brew, and buy the same token from the
 wallet inside the app, with a safety badge shown first.
 
-Larger apps already offer that loop on BNB Chain. What Taproom is built to be best
+Larger apps already offer that loop on BNB Chain. What Tapped is built to be best
 at is records anyone can check (receipts and trader records computed from chain
 data) and risk reading specific to Brew. See "Positioning" in `CLAUDE.md`.
 
-Taproom is an independent, community-built app. It is not affiliated with or
+Tapped is an independent, community-built app. It is not affiliated with or
 endorsed by Brew.
 
 `CLAUDE.md` holds the product scope, positioning, safety model and hard rules.
@@ -84,7 +84,7 @@ Add app packages with `cd app && npx expo install <pkg>`, not plain `npm install
 ## Security rules
 
 - The wallet is embedded and self-custodial. Key material is handled only by the
-  wallet provider's SDK. Taproom's own code, servers and logs never read, store or
+  wallet provider's SDK. Tapped's own code, servers and logs never read, store or
   transmit a private key, seed phrase or key share.
 - Nothing is signed without the user confirming that specific action in the app.
 - `.env` files are git-ignored. Never commit keys.

@@ -2,7 +2,7 @@
 # https://supabase.com/docs/guides/local-development/cli/config
 # A string used to distinguish different Supabase projects on the same host. Defaults to the
 # working directory name when running `supabase init`.
-project_id = "taproom"
+project_id = "tapped"
 
 [api]
 enabled = true
@@ -341,7 +341,7 @@ email_optional = false
 enabled = false
 
 # Allow EVM wallet holders to sign in via Sign in with Ethereum (SIWE, EIP-4361).
-# This was Taproom's sign-in until docs/0007 replaced it with the privy-session function.
+# This was Tapped's sign-in until docs/0007 replaced it with the privy-session function.
 # Still enabled until the external-wallet question in CLAUDE.md is settled.
 [auth.web3.ethereum]
 enabled = true

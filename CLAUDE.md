@@ -1,18 +1,20 @@
-# CLAUDE.md — Taproom
+# CLAUDE.md — Tapped
 
 This file is loaded at the start of every Claude Code session. Read it fully before touching code.
 
 ## What this is
 
-**Taproom** is a social trading app for the **Brew** token launchpad (brew.family) on **BNB Smart Chain (BSC)**.
+**Tapped** is a social trading app for the **Brew** token launchpad (brew.family) on **BNB Smart Chain (BSC)**.
 
 Core loop: open the app → see a live feed of what the wallets you follow are buying and launching on Brew → tap any trade → buy the same token in one tap from your in-app wallet, with a safety badge shown before you confirm.
 
 The wallet and trading experience is modelled on the Fomo app: sign in with Google or Apple, get a self-custodial wallet inside the app, and trade without leaving it. See "Wallet model" below and `docs/0007-embedded-wallet.md`.
 
-That loop is not what makes Taproom different: larger apps already offer it on BSC. What Taproom must be best at is in "Positioning" below. Read it before proposing or building a feature.
+That loop is not what makes Tapped different: larger apps already offer it on BSC. What Tapped must be best at is in "Positioning" below. Read it before proposing or building a feature.
 
-Taproom is an **independent, community-built app. It is not affiliated with or endorsed by Brew.** Never use Brew's logo or imply official status in UI, copy, or metadata.
+Tapped is an **independent, community-built app. It is not affiliated with or endorsed by Brew.** Never use Brew's logo or imply official status in UI, copy, or metadata.
+
+The app was called Taproom until 2026-10-03 (`docs/0021-rename-to-tapped.md`). Every document now uses the new name; only that record, git history and the repo folder (`~/Dev/taproom`) keep the old one.
 
 ### Brew context (domain knowledge)
 - Brew is a token launchpad on BSC, live since early September 2026. Tokens launch directly into **PancakeSwap V3** pools with **permanently locked liquidity** (no bonding curve).
@@ -30,13 +32,13 @@ Taproom is an **independent, community-built app. It is not affiliated with or e
 Set on 2026-10-02 at the project owner's request. The decision is in `docs/0011-positioning.md` and the evidence in `docs/research-2026-10-competitive-landscape.md`.
 
 - **The core loop is not unique.** Fomo, GMGN and Axiom already offer wallet following or tracking, one-tap trading and generic token checks on BSC. They can trade every Brew token, because Brew tokens are ordinary PancakeSwap V3 pools.
-- **Taproom does not compete on** execution speed, funding options, chain coverage or trading-terminal features. Build those only as far as a user needs in order to act on what they see.
-- **Taproom must be best at two things:**
+- **Tapped does not compete on** execution speed, funding options, chain coverage or trading-terminal features. Build those only as far as a user needs in order to act on what they see.
+- **Tapped must be best at two things:**
   1. **Provable records.** Receipts and trader records computed only from indexed chain data, losses included, that anyone can check without trusting a screenshot.
   2. **Brew-specific risk reading.** What generic scanners do not compute per launchpad: a deployer's record across Brew launches, who held the supply in the first blocks, and what the pair asset adds to the risk.
 - **Both depend on complete indexed history.** A record built from partial history is not verified: say what period it covers, or do not show it. The indexer's `/coverage` route is where that period comes from.
 - **Nobody ships a social layer for Brew yet, Brew included** (checked 2026-10-02). That is a head start, not a moat: Brew or a larger app could add one.
-- **Taproom's ceiling is Brew's volume.** Keep launch, pool and trade data free of Brew-only assumptions so a second launchpad could be added without a rewrite. Adding one is not v1 work.
+- **Tapped's ceiling is Brew's volume.** Keep launch, pool and trade data free of Brew-only assumptions so a second launchpad could be added without a rewrite. Adding one is not v1 work.
 
 Every feature should serve one of those two goals or be a release requirement (see MVP scope). If it does neither, flag it before building.
 
@@ -65,17 +67,17 @@ These are the steps that serve the positioning. `docs/0011` has the reasoning.
 
 ### Before the first release build
 
-Requirements for a build that real users can fund. They are not where Taproom competes, so keep each one minimal.
+Requirements for a build that real users can fund. They are not where Tapped competes, so keep each one minimal.
 
 - **Key export** — a hard rule below, not built yet.
 - **Sell** — a user who bought in the app must be able to sell in the app, through the same review step as a buy. Built (`docs/0017`), BNB-paired tokens only like the buy; not yet run with a real wallet.
 - **Portfolio tab** — the user's own holdings. Built (`docs/0018`): indexed Brew tokens with live balances and values per pair asset.
 - **Error reporting** — Sentry is not installed (see Stack).
-- **App identity** — the bundle identifier is `com.andresvaldez.taproom` (iOS bundle ID and Android package, set 2026-10-02 in `app/app.json`). Still needed: an Apple Developer organization account with Sign in with Apple enabled for that ID, and the same ID in the Privy dashboard's allowed app identifiers (`docs/0007`).
+- **App identity** — the bundle identifier is `com.andresvaldez.tapped` (iOS bundle ID and Android package, set 2026-10-03 in `app/app.json` with the rename) and the URL scheme is `tapped`. Still needed: an Apple Developer organization account with Sign in with Apple enabled for that ID, and the same ID and URL scheme in the Privy dashboard's allowed app identifiers (`docs/0007`, `docs/0021`).
 - **Store rules** — the checks under Open questions.
 
 ### Out of scope for v1 (v2+)
-Leaderboard seasons, token-gated holder chat rooms, in-app token launching ("Snap & Launch"), monthly Wrapped cards, push alerts on dev-wallet moves, PnL/tax exports, Chinese-language support, launchpads other than Brew, the Taproom token itself. Also v2+, although Fomo has them: funding the wallet with Apple Pay or a card, Taproom paying network fees for users, a per-trade fee, and chains other than BSC. Don't build these unless asked; do keep the data model friendly to them.
+Leaderboard seasons, token-gated holder chat rooms, in-app token launching ("Snap & Launch"), monthly Wrapped cards, push alerts on dev-wallet moves, PnL/tax exports, Chinese-language support, launchpads other than Brew, the Tapped token itself. Also v2+, although Fomo has them: funding the wallet with Apple Pay or a card, Tapped paying network fees for users, a per-trade fee, and chains other than BSC. Don't build these unless asked; do keep the data model friendly to them.
 
 ## Stack (defaults — change only with a stated reason)
 
@@ -133,7 +135,7 @@ Screens in `app/src/app/` compose feature components. Business logic lives in `a
 Modelled on the Fomo app. Signed off by the project owner on 2026-10-02; this replaces the earlier "all signing happens in the user's own external wallet" rule.
 
 - **Sign-in:** Google or Apple only. No email-and-code sign-in, no external wallet connection, no seed phrase at sign-up. The app opens on the sign-in screen and the rest of it is behind that.
-- **Wallet:** created for the user by the wallet provider when they first sign in. It is self-custodial: the key is split by the provider so that neither Taproom nor the provider alone can move funds.
+- **Wallet:** created for the user by the wallet provider when they first sign in. It is self-custodial: the key is split by the provider so that neither Tapped nor the provider alone can move funds.
 - **Trading:** the user confirms a trade inside the app and the embedded wallet signs it. There is no hop to a separate wallet app.
 - **Profile:** keyed to the embedded wallet's address, so follows, the feed and receipts work as before.
 - **Leaving:** the user can export their key and take the wallet elsewhere.
@@ -187,7 +189,7 @@ A trader record is what a wallet did on Brew tokens: its entries, its exits, and
 ## Hard rules
 
 **Custody and security**
-- The wallet is self-custodial and embedded. Key material is handled only by the wallet provider's SDK. Taproom's own code, servers, logs and telemetry never read, store or transmit a private key, seed phrase or key share.
+- The wallet is self-custodial and embedded. Key material is handled only by the wallet provider's SDK. Tapped's own code, servers, logs and telemetry never read, store or transmit a private key, seed phrase or key share.
 - Nothing is signed without an explicit user confirmation in the app for that specific action. No background signing, no server-side signing, and no delegated or session signing without explicit sign-off.
 - The user can always export their key.
 - No secrets in the repo. Only public values go in `EXPO_PUBLIC_*` env vars. RPC provider keys, Supabase service keys, and similar live server-side only.
@@ -197,7 +199,7 @@ A trader record is what a wallet did on Brew tokens: its entries, its exits, and
 **Legal and product lines (do not cross without explicit sign-off)**
 - No revenue sharing, yield, or dividends to token holders.
 - No wagering where anyone wins money from another user.
-- No custody of user funds, no pooled funds, no "managed" baskets. The embedded wallet is the user's own: Taproom must never be able to move funds without the user.
+- No custody of user funds, no pooled funds, no "managed" baskets. The embedded wallet is the user's own: Tapped must never be able to move funds without the user.
 - No language that reads as investment advice ("guaranteed," "can't lose," "next 100x").
 - Show "Not affiliated with Brew" in the About/settings screen.
 
@@ -207,18 +209,19 @@ A trader record is what a wallet did on Brew tokens: its entries, its exits, and
   - (iii) exchange features only in regions where the app has the licensing for them;
   - (iv) "crypto-securities or quasi-securities trading" must come from approved financial institutions;
   - (v) no offering currency for tasks such as inviting users or posting.
-- **bStock-paired tokens:** whether Taproom shows them, and whether it lets users buy them, given 3.1.5(iv). Nothing filters them today, and indexed multi-pair launches include bStock pools (`docs/0012`).
-- **Dividend-factory tokens:** whether Taproom shows or trades Brew tokens that route fees to holders. The "no dividends" rule above is about Taproom's own offering and does not answer this.
+- **bStock-paired tokens:** whether Tapped shows them, and whether it lets users buy them, given 3.1.5(iv). Nothing filters them today, and indexed multi-pair launches include bStock pools (`docs/0012`).
+- **Dividend-factory tokens:** whether Tapped shows or trades Brew tokens that route fees to holders. The "no dividends" rule above is about Tapped's own offering and does not answer this.
 - **External wallets:** whether connecting an existing wallet comes back as an option beside the embedded wallet. If not, uninstall the Reown and wagmi packages and turn off Supabase's Sign in with Ethereum provider, which is still enabled from `docs/0002`.
-- **Fomo features not yet decided:** Apple Pay or card funding (needs a payment provider and its compliance terms), Taproom paying network fees, and charging a per-trade fee. Each needs its own sign-off.
+- **Fomo features not yet decided:** Apple Pay or card funding (needs a payment provider and its compliance terms), Tapped paying network fees, and charging a per-trade fee. Each needs its own sign-off.
 - **Finding wallets to follow:** Discover is search by address or name, and a token's trades link to each trader's wallet screen. Whether v1 also lists wallets by their record is undecided; a ranked list is close to the leaderboard that is v2.
 - **Receipt verification page:** served by the indexer at `/r/<trade id>` (decided 2026-10-02, `docs/0015`). Still open: the domain, which the owner is getting, and where the indexer is deployed.
-- **Languages:** Brew's own site ships Chinese and Japanese (checked 2026-10-02). Taproom v1 is English-only, and Chinese is listed as v2 above; whether that still holds is undecided.
-- **Launchpad dependency:** whether Taproom stays Brew-only. See Positioning.
+- **Languages:** Brew's own site ships Chinese and Japanese (checked 2026-10-02). Tapped v1 is English-only, and Chinese is listed as v2 above; whether that still holds is undecided.
+- **The name:** "Tapped" is one letter from Tipped (@Tippedonbrew), another app on Brew with a gold "T" on black. The owner chose the name knowing this. Not yet checked: the App Store, trademark registers, a domain and an X handle for "Tapped".
+- **Launchpad dependency:** whether Tapped stays Brew-only. See Positioning.
 - **Brew facts still unconfirmed:** the liquidity locker contracts, and the address of the older multi-pair v2 deployment.
 - **Production RPC:** NodeReal's free plan covers the backfill and about eight days of following new blocks (`docs/0016`, measured 12.5M compute units a day). Production needs its paid plan or another provider.
 - **Multi-pair tokens in the app:** which of a token's pools the token page prices and the buy flow trades through. Today it is whichever the indexer returns first.
-- Taproom token: name, ticker, and mechanics are not final. Planned direction: holding unlocks pro features; in-app launch fees paid in the token are burned; season rewards are cosmetics or fee discounts. Rewards must not pay users for inviting or posting (Apple 3.1.5(v)). Do not build token features in v1.
+- Tapped token: name, ticker, and mechanics are not final. Planned direction: holding unlocks pro features; in-app launch fees paid in the token are burned; season rewards are cosmetics or fee discounts. Rewards must not pay users for inviting or posting (Apple 3.1.5(v)). Do not build token features in v1.
 
 ## How to work in this repo
 

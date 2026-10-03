@@ -64,7 +64,7 @@ function Portfolio({ wallet }: { wallet: Address }) {
 
       {holdings.length === 0 ? (
         <ThemedText themeColor="textSecondary">
-          No Brew tokens in this wallet yet. Tokens you buy in Taproom show up here.
+          No Brew tokens in this wallet yet. Tokens you buy in Tapped show up here.
         </ThemedText>
       ) : null}
 
@@ -85,7 +85,7 @@ function Portfolio({ wallet }: { wallet: Address }) {
 
       <ThemedText type="small" themeColor="textSecondary">
         Values use each pool&apos;s current price and are not added across pair assets. Selling returns less, after the
-        pool fee and price impact. Only Brew tokens Taproom indexes are listed
+        pool fee and price impact. Only Brew tokens Tapped indexes are listed
         {more ? `, and only the ${PORTFOLIO_LIMIT} largest balances` : ''}.
       </ThemedText>
       <Link href={{ pathname: '/wallet/[address]', params: { address: wallet } }} style={styles.link}>

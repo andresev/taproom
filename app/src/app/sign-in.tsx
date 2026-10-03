@@ -68,7 +68,7 @@ export default function SignInScreen() {
             {/* On black the mark stands alone; on the light theme it keeps its black tile. */}
             <Mark size={MARK} tile={light} />
           </View>
-          <GoldTitle text="Taproom" size={52} />
+          <GoldTitle text="Tapped" size={52} />
           <View style={styles.lineRow}>
             <View style={[styles.rule, { backgroundColor: theme.accentText }]} />
             <ThemedText style={styles.line}>

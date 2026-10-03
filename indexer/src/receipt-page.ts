@@ -55,7 +55,7 @@ ${url ? `<meta property="og:url" content="${escape(url)}">\n` : ""}<meta name="r
 <body>
 <main>
 ${body}
-<p class="note">Taproom is an independent, community-built app. Not affiliated with Brew.</p>
+<p class="note">Tapped is an independent, community-built app. Not affiliated with Brew.</p>
 </main>
 </body>
 </html>`;
@@ -78,7 +78,7 @@ export function renderReceiptPage(receipt: Receipt, checkedAt: Date, url: string
   const txUrl = bscscanTxUrl(receipt.txHash);
 
   const body = `<div class="card">
-<div class="head"><strong>Taproom receipt</strong><span>BNB Smart Chain</span></div>
+<div class="head"><strong>Tapped receipt</strong><span>BNB Smart Chain</span></div>
 <h1>${escape(symbol)}</h1>
 ${receipt.token.name && receipt.token.name !== receipt.token.symbol ? `<div class="muted">${escape(receipt.token.name)}</div>` : ""}
 <div class="multiple">${escape(multiple)}</div>
@@ -95,10 +95,10 @@ ${line("Market cap now", receipt.currentMarketCap === null ? "Unknown" : cap(rec
 ${line("Token", receipt.token.address)}
 <div class="muted">Transaction <a href="${escape(txUrl)}">${escape(receipt.txHash)}</a> on BscScan</div>
 </div>
-<p class="note">This page is computed from Taproom's index of BNB Smart Chain, not from any image of it. It proves that the wallet above bought this token in that transaction, at that time and price. It does not show whether the wallet still holds the token or made a profit. Market cap now was read at ${escape(formatUtcDateTime(checkedAt))}; both market caps are in ${escape(pair)} and count the whole supply.</p>`;
+<p class="note">This page is computed from Tapped's index of BNB Smart Chain, not from any image of it. It proves that the wallet above bought this token in that transaction, at that time and price. It does not show whether the wallet still holds the token or made a profit. Market cap now was read at ${escape(formatUtcDateTime(checkedAt))}; both market caps are in ${escape(pair)} and count the whole supply.</p>`;
 
   return page(
-    `${symbol} receipt · Taproom`,
+    `${symbol} receipt · Tapped`,
     `Wallet ${shortAddress(receipt.wallet)} bought ${bought} for ${paid} on ${formatUtcDateTime(receipt.boughtAt)}. ${multiple} market cap since.`,
     url,
     body,
@@ -107,5 +107,5 @@ ${line("Token", receipt.token.address)}
 
 /** A page for an id that is not a receipt, saying why. */
 export function renderNoReceiptPage(reason: string): string {
-  return page("No receipt · Taproom", reason, null, `<div class="card"><h1>No receipt</h1><p>${escape(reason)}</p></div>`);
+  return page("No receipt · Tapped", reason, null, `<div class="card"><h1>No receipt</h1><p>${escape(reason)}</p></div>`);
 }

@@ -13,7 +13,7 @@ never claim an address it had not proved it controls.
 
 - **Wallet connection is Reown AppKit with the wagmi adapter, BSC only**
   (`app/src/lib/chain/wallet.ts`). AppKit's built-in swaps, on-ramp and social
-  logins are turned off: swaps must go through Taproom's own flow so the safety
+  logins are turned off: swaps must go through Tapped's own flow so the safety
   score is shown before signing, and social logins create embedded wallets, which
   conflicts with the no-custody rule.
 - **Sign-in is Sign in with Ethereum, verified by Supabase Auth's built-in Web3
@@ -32,7 +32,7 @@ never claim an address it had not proved it controls.
 - **`EXPO_PUBLIC_APP_URL` is the app's public origin.** Supabase accepts a sign-in
   message only if its URI is the site URL or an allowed redirect URL, its domain
   matches that URI, and it uses HTTPS (localhost excepted). A custom scheme such as
-  `taproom://` is not accepted. Local development uses `http://localhost:3000`,
+  `tapped://` is not accepted. Local development uses `http://localhost:3000`,
   listed in `supabase/config.toml`.
 - **Profile code lives in `app/src/features/profile`**, a feature folder CLAUDE.md's
   structure section did not list.
@@ -50,7 +50,7 @@ never claim an address it had not proved it controls.
 
 ## Still open
 
-- The production value of `EXPO_PUBLIC_APP_URL`: Taproom needs a real HTTPS domain,
+- The production value of `EXPO_PUBLIC_APP_URL`: Tapped needs a real HTTPS domain,
   added to the hosted Supabase project's redirect URLs.
 - Sentry is not installed yet, so sign-in failures are shown to the user but not
   reported anywhere.
@@ -70,3 +70,5 @@ never claim an address it had not proved it controls.
 - Still true: Sentry is not installed. A real HTTPS domain is still needed, now for
   the receipt verification link (0011).
 - No longer relevant: the Android wallet-detection plugin.
+- 2026-10-03: the app was renamed from its earlier name (0021). This record now uses the
+  new name and the new identifiers throughout.

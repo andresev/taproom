@@ -32,7 +32,7 @@ export interface SafetyFacts {
   /** The ten largest holders' share of supply, pools and burn address left out, in basis points. */
   holders: { topTenShareBps: number } | null;
   origin: {
-    /** The launch factory's name ("standard", "multiPairV1", …); null if not a factory Taproom knows. */
+    /** The launch factory's name ("standard", "multiPairV1", …); null if not a factory Tapped knows. */
     factory: string | null;
     matchesTemplate: boolean | null;
   } | null;

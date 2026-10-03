@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "Taproom",
-    "slug": "taproom",
+    "name": "Tapped",
+    "slug": "tapped",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "taproom",
+    "scheme": "tapped",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "bundleIdentifier": "com.andresvaldez.taproom",
+      "bundleIdentifier": "com.andresvaldez.tapped",
       "infoPlist": {
         "LSApplicationQueriesSchemes": [
           "metamask",
@@ -21,7 +21,7 @@
       "usesAppleSignIn": true
     },
     "android": {
-      "package": "com.andresvaldez.taproom",
+      "package": "com.andresvaldez.tapped",
       "adaptiveIcon": {
         "backgroundColor": "#050505",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

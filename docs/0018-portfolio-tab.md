@@ -38,7 +38,7 @@ wallet", left over from 0002.
 
 ## Known limits
 
-- **Only Brew tokens Taproom indexes are listed:** the standard and multi-pair
+- **Only Brew tokens Tapped indexes are listed:** the standard and multi-pair
   factories. Other tokens in the wallet are not shown, and the tab says so.
 - **No cost basis or gain on the tab.** What the wallet paid is on its trader
   record, one tap away.

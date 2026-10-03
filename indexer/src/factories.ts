@@ -41,7 +41,7 @@ export const FACTORIES = [
       hash: "0xad3a73afe9e6d3af863bf9d50064c15f65a9724f34e8bcf02720ab4a87cd8b10",
     },
   },
-  // Not indexed: whether Taproom shows tokens that route fees to holders is an
+  // Not indexed: whether Tapped shows tokens that route fees to holders is an
   // open question in CLAUDE.md.
   {
     name: "dividend",

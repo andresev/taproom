@@ -1,5 +1,5 @@
 /**
- * Taproom's design tokens (docs/0020): colours for both themes, the two type
+ * Tapped's design tokens (docs/0020): colours for both themes, the two type
  * families, spacing on a 4pt grid and corner sizes. Screens style through these,
  * never with literal colours or font names.
  *

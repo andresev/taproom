@@ -1,6 +1,6 @@
 /**
  * The public address of a receipt: the indexer's GET /r/:id page, served from
- * Taproom's own domain (docs/0010). The base comes from
+ * Tapped's own domain (docs/0010). The base comes from
  * EXPO_PUBLIC_RECEIPT_PAGE_URL; until it is set, cards carry no link or QR code
  * rather than one that leads nowhere.
  */

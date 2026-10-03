@@ -51,7 +51,7 @@ logs and 22 PancakeSwap V3 `Swap` logs per block, across all contracts.
   `START_BLOCK` and its own deployment block.** Setting it to 120201671 indexes
   everything. Unset still means the chain head.
 - **Multi-pair v1 and v2 are indexed.** The dividend factory is not: whether
-  Taproom shows tokens that route fees to holders is still open (CLAUDE.md).
+  Tapped shows tokens that route fees to holders is still open (CLAUDE.md).
 - **v2 pools are followed from `PoolAdded.pool`,** the same pattern as the standard
   factory. `PoolAdded` does not carry the fee, so it is read from the pool's
   `fee()`, which never changes.
@@ -113,7 +113,7 @@ With the indexer started at block 125,035,000 on the development RPC:
   tokens use a different template. One v1 and one v2 token were scanned and came
   back clean; that is two tokens, not a review of the template.
 - **Multi-pair launches bring bStock pairs into the feed and token page.** The v2
-  launch above has a pool against MSFTB. Whether Taproom shows bStock-paired tokens
+  launch above has a pool against MSFTB. Whether Tapped shows bStock-paired tokens
   is an open question in CLAUDE.md, and nothing filters them today.
 - **v1 launches with pair counts other than two are untested against the chain.**
   None was found. The positions for one to five pairs are checked against viem's

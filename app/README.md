@@ -1,4 +1,4 @@
-# Taproom app
+# Tapped app
 
 The Expo client. See the repo root `README.md` for setup and `CLAUDE.md` for scope and rules.
 

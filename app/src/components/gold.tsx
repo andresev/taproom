@@ -29,7 +29,7 @@ export function GoldFill() {
 }
 
 /**
- * "Taproom" or "On tap" in gold. `size` is the font size it stands in for; the
+ * "Tapped" or "On tap" in gold. `size` is the font size it stands in for; the
  * title is 1.3 times that tall, like a line of text. `on` is the background it
  * sits on, the phone's theme unless given.
  */

@@ -7,7 +7,7 @@ index 48c974b..73c6e3d 100644
              ? Number(process.env.PONDER_MAX_THREADS)
              : 4,
 -        factoryAddressCountThreshold: 1_000,
-+        // Taproom patch (docs/0016): keep filtering eth_getLogs by address for
++        // Tapped patch (docs/0016): keep filtering eth_getLogs by address for
 +        // factories with many children. Without it, past 1,000 children Ponder
 +        // requests every log with the event's signature across the whole chain.
 +        // Long address lists are split in sync-historical/index.js instead.
@@ -23,7 +23,7 @@ index 535141d..626bb8a 100644
       */
      const syncLogsDynamic = async (params, context) => {
          const { address, topics } = params;
-+        // Taproom patch (docs/0016): providers cap the addresses one eth_getLogs
++        // Tapped patch (docs/0016): providers cap the addresses one eth_getLogs
 +        // may filter on (NodeReal: 1,000), and merged factory filters can list
 +        // more. Split the list and fetch each part over the same blocks.
 +        const MAX_ADDRESSES_PER_REQUEST = 1_000;

@@ -37,10 +37,10 @@ asked for CLAUDE.md and the rest of the documentation to hold that direction.
 
 ## Decisions
 
-- **Taproom does not compete on execution:** speed, funding options, chain coverage
+- **Tapped does not compete on execution:** speed, funding options, chain coverage
   or trading-terminal features. Those are built only as far as a user needs in order
   to act on what they see.
-- **Taproom must be best at two things.** Provable records: receipts and trader
+- **Tapped must be best at two things.** Provable records: receipts and trader
   records computed only from indexed chain data, losses included, that anyone can
   check. Brew-specific risk reading: a deployer's record across Brew launches, who
   held the supply in the first blocks, and what the pair asset adds to the risk.
@@ -85,12 +85,12 @@ key export and withdrawal. These were added while writing and stand unless chang
 
 ## Still open
 
-- Whether Taproom shows or trades bStock-paired tokens and dividend-factory tokens.
+- Whether Tapped shows or trades bStock-paired tokens and dividend-factory tokens.
 - How users find wallets to follow. Discover is search only, and a ranked list is
   close to the leaderboard that is v2.
 - Where the receipt verification page is hosted, and on what domain.
 - Whether Chinese moves into v1.
-- Whether Taproom stays Brew-only.
+- Whether Tapped stays Brew-only.
 - The definitions and thresholds for the new safety inputs, and for the "result" of
   a position in a trader record. Each gets its own record when it is built.
 - A current figure for Brew's daily volume.

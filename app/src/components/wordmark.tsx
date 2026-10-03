@@ -5,7 +5,7 @@ import { GoldTitle } from '@/components/gold';
 import { Brand } from '@/theme';
 
 /**
- * Taproom's own mark: a "T" whose crossbar ends in a tap spout, with one drop,
+ * Tapped's own mark: a "T" whose crossbar ends in a tap spout, with one drop,
  * in brushed gold on a black tile. Its colours are fixed, the same in both
  * themes. It is not Brew's logo, and nothing of Brew's is used (CLAUDE.md).
  *
@@ -15,7 +15,7 @@ import { Brand } from '@/theme';
  */
 export function Mark({ size = 40, tile = true }: { size?: number; tile?: boolean }) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 100 100" accessibilityLabel="Taproom">
+    <Svg width={size} height={size} viewBox="0 0 100 100" accessibilityLabel="Tapped">
       <Defs>
         <LinearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
           {Brand.gold.map((stop) => (
@@ -50,7 +50,7 @@ export function Wordmark({ size = 34, on, tile = true }: { size?: number; on?: '
   return (
     <View style={[styles.wordmark, { gap: size * (tile ? 0.36 : 0.2) }]}>
       <Mark size={size * 1.25} tile={tile} />
-      <GoldTitle text="Taproom" size={size} on={on} />
+      <GoldTitle text="Tapped" size={size} on={on} />
     </View>
   );
 }

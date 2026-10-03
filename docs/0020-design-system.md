@@ -15,7 +15,7 @@ written brief and a set of mockups (49 artboards, dark and light).
 - **The look takes Brew's palette and type in feel, with its own identity.**
   Warm, slightly olive neutrals, one brass accent, flat surfaces with hairline
   borders, no shadows, glows or gradients. Nothing of Brew's is used: no logo,
-  mascot or wordmark. Taproom has its own mark, a tap handle over a spout.
+  mascot or wordmark. Tapped has its own mark, a tap handle over a spout.
 - **Dark is the default; light follows the phone's setting.** Both themes are in
   `app/src/theme/index.ts`, with the names from the token sheet: `background`,
   `card`, `cardPressed`, `text`, `textSecondary`, `border`, `accent`, `onAccent`,
@@ -93,7 +93,7 @@ written brief and a set of mockups (49 artboards, dark and light).
   - **Discover:** a search field and tap-list rows, each with Follow.
   - **Receipt:** a paper bar tab with punched edges, mono type and the QR code.
     Its colours are fixed, so the shared image looks the same from any phone.
-  - **App icon and splash:** Taproom's mark on brass, drawn by
+  - **App icon and splash:** Tapped's mark on brass, drawn by
     `app/scripts/render-icons.py`. The Expo template's icon file was removed.
 - The wallet address on Profile opens the system share sheet, which includes Copy.
   A one-tap copy needs a clipboard module, which is a new dependency and has not
@@ -106,7 +106,7 @@ written brief and a set of mockups (49 artboards, dark and light).
   - The mark's colours are fixed in both themes (`Brand` in `app/src/theme`).
   - `app/src/components/wordmark.tsx` and `app/scripts/render-icons.py` draw the
     same shapes; change both together.
-  - The wordmark is now "Taproom", capitalised.
+  - The wordmark is now "Tapped", capitalised.
   - The app icon is the mark on black with a soft gold light behind it; the
     Android icon's background is black; the splash shows the mark alone.
   - Not yet seen on the phone: the icon and splash are native, so they need a
@@ -119,7 +119,7 @@ written brief and a set of mockups (49 artboards, dark and light).
     hairlines; the light theme keeps its colours and takes a gold-tinted
     hairline. Buy, sell and the safety colours are unchanged.
   - **Gold gradients are used only for:** the logo, the primary button, the
-    titles "Taproom" and "On tap", the sign-in screen, and a faint light at the
+    titles "Tapped" and "On tap", the sign-in screen, and a faint light at the
     top of dark screens. Cards, rows and numbers stay flat.
   - **Gold titles are outlines, not text.** React Native text cannot take a
     gradient without a masking library, so the two phrases were read from the
@@ -134,3 +134,5 @@ written brief and a set of mockups (49 artboards, dark and light).
   - The indexer's public receipt page keeps its own plain styling.
   - Not yet seen on the phone. Contrast was checked in the mockups: secondary
     text on black is 7.9:1 and button text on the darkest gold is 7.6:1.
+- 2026-10-03: the app is renamed Tapped (0021). The gold title is now "Tapped"; the mark
+  is unchanged.

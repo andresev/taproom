@@ -160,7 +160,7 @@ export function washActivityCheck(facts: SafetyFacts['washActivity']): SafetyChe
 export function originCheck(facts: SafetyFacts['origin']): SafetyCheck {
   if (!facts) return { id: 'origin', status: 'unknown', reason: 'Origin: Unknown' };
   if (facts.factory === null) {
-    return { id: 'origin', status: 'fail', reason: 'Not launched by a Brew factory Taproom knows.' };
+    return { id: 'origin', status: 'fail', reason: 'Not launched by a Brew factory Tapped knows.' };
   }
   const factory = `Brew's ${FACTORY_LABELS[facts.factory] ?? facts.factory} factory`;
   if (facts.matchesTemplate === null) {

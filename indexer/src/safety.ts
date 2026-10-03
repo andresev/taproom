@@ -56,7 +56,7 @@ export interface SafetyFacts {
   } | null;
   /** Which factory launched the token, and whether its code is that factory's template (docs/0014). */
   origin: {
-    /** The indexed factory's name; null when the token's factory is not one Taproom knows. */
+    /** The indexed factory's name; null when the token's factory is not one Tapped knows. */
     factory: string | null;
     /** Null when there is no recorded template for that factory. */
     matchesTemplate: boolean | null;

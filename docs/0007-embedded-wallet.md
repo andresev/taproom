@@ -20,16 +20,16 @@ that sign-off on 2026-10-02 and asked for CLAUDE.md to be changed to match.
   sign-in** (first written as email or Apple; changed the same day at the owner's
   request). CLAUDE.md gains a "Wallet model" section and its custody rules are
   rewritten around it.
-- **What stays forbidden:** Taproom's own code, servers and logs handling key
+- **What stays forbidden:** Tapped's own code, servers and logs handling key
   material; signing anything without an explicit in-app confirmation; server-side,
-  delegated or session signing; any arrangement where Taproom could move funds
+  delegated or session signing; any arrangement where Tapped could move funds
   without the user. Users must be able to export their key.
 - **Trading happens inside the app,** which settles the app store question in
   CLAUDE.md in favour of in-app swaps. The store guidelines still need checking
   before a release build.
 - **Privy is the provider,** because it is what Fomo uses. It was installed later
   the same day (`@privy-io/expo`); the next section describes how it is used.
-- **Not adopted from Fomo in v1:** Apple Pay or card funding, Taproom paying
+- **Not adopted from Fomo in v1:** Apple Pay or card funding, Tapped paying
   network fees, a per-trade fee, and other chains. Each is listed in CLAUDE.md as
   out of scope or an open question needing its own sign-off.
 
@@ -92,6 +92,9 @@ that sign-off on 2026-10-02 and asked for CLAUDE.md to be changed to match.
 - 2026-10-02: buys are signed by the embedded wallet (0008).
 - 2026-10-02: key export is not built. 0011 lists it, with a real bundle identifier,
   as a requirement before the first release build.
-- 2026-10-02: the bundle identifier is `com.andresvaldez.taproom`. It must be listed in
+- 2026-10-02: the bundle identifier is `com.andresvaldez.tapped`. It must be listed in
   the Privy app client's allowed identifiers, and Sign in with Apple enabled for it
   under an Apple Developer team.
+- 2026-10-03: the app was renamed from its earlier name (0021), and this record now uses
+  the new name and identifiers. The bundle identifier `com.andresvaldez.tapped` and the
+  URL scheme `tapped` must be allowed in the Privy dashboard in place of the old ones.

@@ -34,7 +34,7 @@ export default function ProfileScreen() {
             <LoadingState />
           )}
           <ThemedText type="small" themeColor="textSecondary" style={styles.about}>
-            Taproom is independent and community-built. Not affiliated with Brew.
+            Tapped is independent and community-built. Not affiliated with Brew.
           </ThemedText>
         </ScrollView>
       </SafeAreaView>

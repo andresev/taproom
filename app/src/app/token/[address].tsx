@@ -45,7 +45,7 @@ function TokenPage({ address }: { address: Address }) {
     return (
       <EmptyState
         title="Token not indexed"
-        message="This is not a Brew token Taproom has indexed. It may have launched before the indexed history, or through a Brew factory that is not covered yet."
+        message="This is not a Brew token Tapped has indexed. It may have launched before the indexed history, or through a Brew factory that is not covered yet."
       />
     );
   }
