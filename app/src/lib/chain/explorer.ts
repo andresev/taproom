@@ -1,6 +1,2 @@
-const BSCSCAN = 'https://bscscan.com';
-
-// `as const` keeps the "https://…" template type, which typed routes need for external links.
-export const bscscanTxUrl = (txHash: string) => `${BSCSCAN}/tx/${txHash}` as const;
-export const bscscanAddressUrl = (address: string) => `${BSCSCAN}/address/${address}` as const;
-export const bscscanTokenUrl = (address: string) => `${BSCSCAN}/token/${address}` as const;
+/** BscScan links live in @repo/shared (shared/src/explorer.ts), shared with the indexer's receipt page. */
+export { bscscanAddressUrl, bscscanTokenUrl, bscscanTxUrl } from '@repo/shared';

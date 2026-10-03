@@ -10,18 +10,36 @@ export const FACTORIES = [
     address: ADDRESSES.brewFactory,
     deploymentBlock: DEPLOYMENT_BLOCKS.brewFactory,
     indexed: true,
+    // Checked on 40 tokens from 40 deployers (2026-10-02, docs/0014).
+    template: {
+      codeSize: 1991,
+      deployerOffset: 1424,
+      hash: "0xe56fe7a81e7bbcca329d3fe5ddc2f73fea66f86bbfe46375aadeefc734c8e8d2",
+    },
   },
   {
     name: "multiPairV1",
     address: ADDRESSES.brewMultiPairFactory,
     deploymentBlock: DEPLOYMENT_BLOCKS.brewMultiPairFactory,
     indexed: true,
+    // Checked on 10 tokens (2026-10-02, docs/0014).
+    template: {
+      codeSize: 2088,
+      deployerOffset: 1495,
+      hash: "0x235547828d3af8b23084eba909100d938308240c1c71789824187e7b158a9882",
+    },
   },
   {
     name: "multiPairV2",
     address: ADDRESSES.brewMultiPairFactoryV2,
     deploymentBlock: DEPLOYMENT_BLOCKS.brewMultiPairFactoryV2,
     indexed: true,
+    // Checked on 2 tokens only: few v2 launches were in the indexed range (docs/0014).
+    template: {
+      codeSize: 2088,
+      deployerOffset: 1495,
+      hash: "0xad3a73afe9e6d3af863bf9d50064c15f65a9724f34e8bcf02720ab4a87cd8b10",
+    },
   },
   // Not indexed: whether Taproom shows tokens that route fees to holders is an
   // open question in CLAUDE.md.
@@ -30,8 +48,21 @@ export const FACTORIES = [
     address: ADDRESSES.brewDividendFactory,
     deploymentBlock: DEPLOYMENT_BLOCKS.brewDividendFactory,
     indexed: false,
+    template: null,
   },
 ] as const;
+
+/**
+ * The contract code every token from one factory shares. Each token's code
+ * differs from the others only in its deployer's address, written into the code
+ * at `deployerOffset`; with those 20 bytes set to zero, the code hashes to `hash`
+ * (keccak256).
+ */
+export interface Template {
+  codeSize: number;
+  deployerOffset: number;
+  hash: `0x${string}`;
+}
 
 export type FactoryName = (typeof FACTORIES)[number]["name"];
 

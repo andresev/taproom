@@ -1,6 +1,8 @@
 import { toFunctionSelector } from "viem";
 import { describe, expect, it } from "vitest";
-import { roundTripLossBps, safetyRequestSchema, scanBytecode } from "./safety";
+import { FACTORIES } from "./factories";
+import { RSUN_CODE, SUPER_INU_CODE } from "./fixtures/token-code";
+import { lastToFirstPriceBps, matchesTemplate, roundTripLossBps, safetyRequestSchema, scanBytecode, shareBps } from "./safety";
 
 const push4 = (signature: string) => `63${toFunctionSelector(signature).slice(2)}`;
 
@@ -63,5 +65,88 @@ describe("safetyRequestSchema", () => {
     for (const bad of [{}, { token: "RSUN" }, { token: "0x1234" }, { token: 5 }]) {
       expect(safetyRequestSchema.safeParse(bad).success).toBe(false);
     }
+  });
+});
+
+const template = (name: string) => {
+  const found = FACTORIES.find((factory) => factory.name === name)?.template;
+  if (!found) throw new Error(`no template for ${name}`);
+  return found;
+};
+
+/** Changes one byte of `code` at `offset`. */
+const tamper = (code: `0x${string}`, offset: number) => {
+  const at = 2 + offset * 2;
+  const byte = code.slice(at, at + 2) === "00" ? "01" : "00";
+  return `${code.slice(0, at)}${byte}${code.slice(at + 2)}` as `0x${string}`;
+};
+
+describe("matchesTemplate", () => {
+  it("matches real tokens to their own factory's template", () => {
+    expect(matchesTemplate(RSUN_CODE, template("standard"))).toBe(true);
+    expect(matchesTemplate(SUPER_INU_CODE, template("multiPairV1"))).toBe(true);
+  });
+
+  it("does not match a token to another factory's template", () => {
+    expect(matchesTemplate(RSUN_CODE, template("multiPairV1"))).toBe(false);
+    expect(matchesTemplate(SUPER_INU_CODE, template("standard"))).toBe(false);
+    expect(matchesTemplate(SUPER_INU_CODE, template("multiPairV2"))).toBe(false);
+  });
+
+  it("ignores the deployer's address and nothing else", () => {
+    const standard = template("standard");
+    expect(matchesTemplate(tamper(RSUN_CODE, standard.deployerOffset + 5), standard)).toBe(true);
+    expect(matchesTemplate(tamper(RSUN_CODE, standard.deployerOffset - 1), standard)).toBe(false);
+    expect(matchesTemplate(tamper(RSUN_CODE, standard.deployerOffset + 20), standard)).toBe(false);
+    expect(matchesTemplate(tamper(RSUN_CODE, 0), standard)).toBe(false);
+  });
+
+  it("finds RSUN's deployer where the template says it is", () => {
+    const { deployerOffset } = template("standard");
+    expect(RSUN_CODE.slice(2 + deployerOffset * 2, 2 + (deployerOffset + 20) * 2)).toBe(
+      "77de6a0ed0ad7479e2e7de553cfe9452438cd8b5",
+    );
+  });
+
+  it("rejects code of the wrong length", () => {
+    expect(matchesTemplate(`${RSUN_CODE}00`, template("standard"))).toBe(false);
+  });
+});
+
+describe("lastToFirstPriceBps", () => {
+  const q96 = 2n ** 96n;
+
+  it("is 10,000 when the price has not moved", () => {
+    expect(lastToFirstPriceBps(q96, q96, true)).toBe(10_000);
+  });
+
+  it("reads a fall for a token that is token0: the pool price is the token's own price", () => {
+    // sqrt price halves, so the price is a quarter of what it was.
+    expect(lastToFirstPriceBps(q96, q96 / 2n, true)).toBe(2_500);
+  });
+
+  it("inverts for a token that is token1", () => {
+    // The pool price doubling in sqrt terms means the token is worth a quarter.
+    expect(lastToFirstPriceBps(q96, q96 * 2n, false)).toBe(2_500);
+    expect(lastToFirstPriceBps(q96, q96 / 2n, false)).toBe(40_000);
+  });
+
+  it("caps a very large rise", () => {
+    expect(lastToFirstPriceBps(1n, q96, true)).toBe(1_000_000_000);
+  });
+
+  it("refuses a missing price", () => {
+    expect(() => lastToFirstPriceBps(0n, q96, true)).toThrow(RangeError);
+  });
+});
+
+describe("shareBps", () => {
+  it("is part over whole in basis points, truncated", () => {
+    expect(shareBps(1n, 3n)).toBe(3_333);
+    expect(shareBps(5n, 5n)).toBe(10_000);
+  });
+
+  it("is null when there is nothing to divide by", () => {
+    expect(shareBps(5n, 0n)).toBeNull();
   });
 });

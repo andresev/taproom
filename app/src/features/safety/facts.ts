@@ -29,4 +29,34 @@ export interface SafetyFacts {
     wallets: number;
     topWalletTrades: number;
   } | null;
+  origin: {
+    /** The launch factory's name ("standard", "multiPairV1", …); null if not a factory Taproom knows. */
+    factory: string | null;
+    matchesTemplate: boolean | null;
+  } | null;
+  pairAssets: {
+    pairToken: string;
+    pairSymbol: string | null;
+    kind: 'major' | 'brew' | 'tokenized-stock' | 'gold' | 'brew-token' | 'other';
+  }[] | null;
+  deployerRecord: {
+    deployer: string;
+    historyFrom: number | null;
+    historyComplete: boolean;
+    earlierLaunchCount: number;
+    earlierLaunches: {
+      token: string;
+      symbol: string | null;
+      launchedAt: number;
+      lastToFirstPriceBps: number | null;
+      soldWithinHourBps: number | null;
+    }[];
+  } | null;
+  launchHolders: {
+    blocks: number;
+    totalSupply: string;
+    bought: string;
+    deployerBought: string;
+    wallets: number;
+  } | null;
 }

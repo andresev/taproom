@@ -4,11 +4,16 @@ import { db } from "ponder:api";
 import schema from "ponder:schema";
 
 import { ACTIVITY_LIMIT, activityRequestSchema, type ActivityRow } from "../activity";
+import { buildReceipt, quoteAtSpot, type ReceiptTradeRow } from "@repo/shared";
+
+import { erc20SupplyAbi } from "../../abis/erc20";
+import { pancakeV3PoolSlot0Abi } from "../../abis/pancake-v3-pool";
 import { buildCoverage, withBlockTimes } from "../coverage";
 import { loadEnv } from "../env";
+import { renderNoReceiptPage, renderReceiptPage, TRADE_ID } from "../receipt-page";
 import { recordRequestSchema, toPositions, type LegRow, type RecordResponse, type TokenInfo } from "../record";
 import { safetyRequestSchema, type SafetyFacts } from "../safety";
-import { rpc } from "./rpc";
+import { blockTime, rpc } from "./rpc";
 import { gatherSafetyFacts } from "./safety-facts";
 
 const { holder, pool, token, trade } = schema;
@@ -151,23 +156,20 @@ app.post("/activity", async (c) => {
  * say how far the sync has got; Ponder's own /ready and /status do.
  */
 const coverage = buildCoverage(loadEnv().START_BLOCK);
-/** Start block times never change, so each is read once. A failed read is retried on the next request. */
-const blockTimes = new Map<number, number>();
 app.get("/coverage", async (c) => {
-  const missing = coverage.factories
-    .map((factory) => factory.fromBlock)
-    .filter((block): block is number => block !== null && !blockTimes.has(block));
+  // A start block whose time cannot be read is left out: the response says the
+  // time is unknown rather than guessing it.
+  const blocks = [...new Set(coverage.factories.map((factory) => factory.fromBlock))].filter(
+    (block): block is number => block !== null,
+  );
+  const times = new Map<number, number>();
   await Promise.all(
-    [...new Set(missing)].map(async (blockNumber) => {
-      try {
-        const block = await rpc().getBlock({ blockNumber: BigInt(blockNumber) });
-        blockTimes.set(blockNumber, Number(block.timestamp));
-      } catch {
-        // Left out: the response says the time is unknown rather than guessing it.
-      }
+    blocks.map(async (block) => {
+      const time = await blockTime(block);
+      if (time !== null) times.set(block, time);
     }),
   );
-  return c.json(withBlockTimes(coverage, blockTimes));
+  return c.json(withBlockTimes(coverage, times));
 });
 
 /**
@@ -231,6 +233,80 @@ app.post("/record", async (c) => {
     }),
   );
   return c.json(response);
+});
+
+/** The pool's market cap now, in pair-asset base units, or null if the read fails. */
+async function currentMarketCap(row: ReceiptTradeRow): Promise<bigint | null> {
+  if (!row.tokenInfo || !row.poolInfo) return null;
+  try {
+    const [slot0, supply] = await rpc().multicall({
+      allowFailure: true,
+      contracts: [
+        { address: row.poolInfo.address as `0x${string}`, abi: pancakeV3PoolSlot0Abi, functionName: "slot0" },
+        { address: row.tokenInfo.address as `0x${string}`, abi: erc20SupplyAbi, functionName: "totalSupply" },
+      ],
+    });
+    if (slot0.status !== "success" || supply.status !== "success" || slot0.result[0] <= 0n) return null;
+    return quoteAtSpot(slot0.result[0], row.poolInfo.tokenIsToken0, supply.result);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The public receipt page, linked from the QR code on a shared card. It rebuilds
+ * the receipt from the indexed trade with the same code as the app
+ * (@repo/shared), so a shared image can be checked against the chain.
+ */
+app.get("/r/:id", async (c) => {
+  const started = Date.now();
+  const id = c.req.param("id").toLowerCase();
+  if (!TRADE_ID.test(id)) return c.html(renderNoReceiptPage("That is not a valid receipt link."), 404);
+
+  const [found] = await db
+    .select({ trade, token, pool })
+    .from(trade)
+    .leftJoin(token, eq(token.address, trade.token))
+    .leftJoin(pool, eq(pool.address, trade.pool))
+    .where(eq(trade.id, id))
+    .limit(1);
+  if (!found) {
+    return c.html(renderNoReceiptPage("This trade is not indexed, so there is nothing to prove."), 404);
+  }
+
+  const row: ReceiptTradeRow = {
+    id: found.trade.id,
+    txHash: found.trade.txHash,
+    wallet: found.trade.wallet,
+    side: found.trade.side,
+    amountBaseUnits: found.trade.amountBaseUnits.toString(),
+    pairAmountBaseUnits: found.trade.pairAmountBaseUnits.toString(),
+    sqrtPriceX96: found.trade.sqrtPriceX96.toString(),
+    blockTime: found.trade.blockTime.toString(),
+    tokenInfo: found.token && {
+      address: found.token.address,
+      symbol: found.token.symbol,
+      name: found.token.name,
+      decimals: found.token.decimals,
+      totalSupply: found.token.totalSupply.toString(),
+    },
+    poolInfo: found.pool && {
+      address: found.pool.address,
+      pairSymbol: found.pool.pairSymbol,
+      pairDecimals: found.pool.pairDecimals,
+      tokenIsToken0: found.pool.tokenIsToken0,
+    },
+  };
+  const checkedAt = new Date();
+  const result = buildReceipt(row, await currentMarketCap(row));
+
+  console.log(
+    JSON.stringify({ service: "indexer", event: "receipt_page", id, ok: result.ok, ms: Date.now() - started }),
+  );
+  if (!result.ok) return c.html(renderNoReceiptPage(result.reason), 404);
+  // The entry never changes; the current market cap is re-read at most once a minute.
+  c.header("Cache-Control", "public, max-age=60");
+  return c.html(renderReceiptPage(result.receipt, checkedAt, c.req.url));
 });
 
 /** How long one token's facts are reused. The simulation is the costly part. */

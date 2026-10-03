@@ -18,7 +18,7 @@ Taproom is an **independent, community-built app. It is not affiliated with or e
 - Brew is a token launchpad on BSC, live since early September 2026. Tokens launch directly into **PancakeSwap V3** pools with **permanently locked liquidity** (no bonding curve).
 - Tokens are "brewed with" a pair asset: WBNB, USDT, the native **$BREW** token, other memecoins, or tokenized stocks ("bStocks"). A Brew token can be brewed with another Brew token.
 - Brew has **five launch factories**: standard (about 89% of launches on 2026-10-01), dividend, multi-pair v1, and two deployments of multi-pair v2. A multi-pair launch gives one token several pools. The standard factory, multi-pair v1 and the current multi-pair v2 are indexed; the dividend factory and the older v2 deployment are not (`docs/0012-indexer-history-and-coverage.md`).
-- Standard-factory tokens share one contract template with no owner, mint, blacklist or tax-setting functions (`docs/0009-safety-checks.md`). Multi-pair tokens use a different template; the two scanned had none of those functions either (`docs/0012`).
+- Tokens from one Brew factory share one contract template, identical except for the deployer's address written into the code. The standard template has no owner, mint, blacklist or tax-setting functions (`docs/0009-safety-checks.md`); the multi-pair templates differ from it and the tokens scanned had none of those functions either (`docs/0012`, `docs/0014`).
 - Trading fee is 1%; the token side of the fee is burned. The pair side is reported to be split between the creator and the protocol, and a creator can route their share to holders or to buyback-and-burn. That split comes from secondary sources: check it on-chain before relying on it.
 - $BREW contract: `0xfa6d9b504848606eb9aec04ccc161d169b3f2159`
 - Confirmed addresses live in `shared/src/addresses.ts`, each with a comment saying where it came from, with each factory's deployment block beside them. `app/src/lib/chain/addresses.ts` re-exports the addresses. Still unconfirmed: Brew's liquidity locker contracts. Brew's site bundle names one per factory; none has been checked on-chain.
@@ -60,8 +60,8 @@ These are the steps that serve the positioning. `docs/0011` has the reasoning.
 
 8. **Indexer history and coverage** — backfill from the standard factory's deployment block, and index the multi-pair factories. Partly built (`docs/0012`): the deployment blocks are confirmed, multi-pair v1 and v2 are indexed, and `GET /coverage` says which factories are indexed and from which block. The backfill has not been run: it needs an RPC that serves old logs, and a fix for how Ponder requests logs once a factory has 1,000 child contracts. The dividend factory waits on its open question. Steps 9 to 11 are only as good as this.
 9. **Trader records** — on the wallet screen, a wallet's entries, exits and results on Brew tokens, computed from the indexer (see Trader records). First version built (`docs/0013`); it states a partial period until step 8's backfill runs.
-10. **Checkable receipts** — a public link, and a QR code on the card, that re-renders the receipt from indexed data; and a list of the user's own receipts (see Receipts). The list is built (Profile → Your receipts, `docs/0010`); the link and QR code wait on where the page is hosted.
-11. **Brew-specific safety inputs** — deployer record, launch-time holders, pair-asset risk and origin (see Safety model).
+10. **Checkable receipts** — a public link, and a QR code on the card, that re-renders the receipt from indexed data; and a list of the user's own receipts (see Receipts). Built: the list (Profile → Your receipts, `docs/0010`), and the indexer's public page at `/r/<trade id>` with its link and QR code on the card (`docs/0015`). Cards carry the link only once `EXPO_PUBLIC_RECEIPT_PAGE_URL` is set, which waits on the production domain.
+11. **Brew-specific safety inputs** — deployer record, launch-time holders, pair-asset risk and origin (see Safety model). First version built (`docs/0014`); deployer records are partial until step 8's backfill runs, and bundles are not detected.
 
 ### Before the first release build
 
@@ -142,20 +142,23 @@ Modelled on the Fomo app. Signed off by the project owner on 2026-10-02; this re
 
 Every token shows a score (Safe / Caution / Danger) **and the reasons**. Never show a score without its reasons.
 
-Standard-factory tokens share one template, so the contract check passes for every one of them, and the sell simulation is expected to as well. Neither tells one standard Brew token from another. Multi-pair tokens use a second template; the two tokens scanned passed both checks, which is not yet a review of that template (`docs/0012`). The inputs that differ between tokens carry the score, which is why the Brew-specific inputs are step 11.
+Tokens from one factory share one template, so the contract check passes for every one of them, and the sell simulation is expected to as well. Neither tells one Brew token from another. The inputs that differ between tokens carry the score: the Brew-specific ones below (`docs/0014`).
 
-Inputs built (`docs/0009-safety-checks.md` has the thresholds and what each input leaves out):
+Generic inputs (`docs/0009-safety-checks.md` has the thresholds and what each input leaves out):
 - **Dev wallet:** has the deployer sold, how much, how fast after launch.
 - **Holder concentration:** top-10 share of supply, excluding the token's pools and the burn address. Known exchange wallets are not excluded yet.
 - **Contract checks:** owner privileges, mint function, adjustable taxes, blacklist functions.
 - **Sell simulation (honeypot check):** a small buy then a sell inside one simulated block (`eth_simulateV1` through viem, with a state override for the balance); flag if the sell reverts or the round-trip loss is high. BNB-paired tokens only so far. A third-party API like GoPlus can be a secondary signal, never the only one.
 - **Wash activity:** trades vs. unique wallets, and the busiest wallet's share of trades.
 
-Inputs still to build, the Brew-specific ones:
-- **Deployer record:** prior Brew launches from the same deployer and how they ended, not only how many there were.
-- **Launch-time holders:** the share of supply bought in the first blocks by snipers, and by bundles.
-- **Pair asset:** what the token is brewed with, as its own reason. Liquidity priced in a memecoin can lose its value with that memecoin.
-- **Origin:** confirm the token was created by a Brew factory in `addresses.ts` and matches that factory's template. A token that does not is never Safe.
+Brew-specific inputs (`docs/0014-brew-safety-inputs.md` has the definitions and thresholds):
+- **Origin:** the token was created by a Brew factory in `addresses.ts` and its code is that factory's template. A token that is not is never Safe.
+- **Pair asset:** what each pool is brewed with, from Brew's own list of pair assets (`shared/src/pair-assets.ts`). Liquidity priced in $BREW, another Brew token, a tokenized stock or a memecoin can lose its value with that asset.
+- **Deployer record:** the deployer's earlier Brew launches and how they went (price fall, or the deployer selling within an hour), within the indexed history.
+- **Launch-time holders:** the share of supply bought in the first three blocks of trading, the deployer's included.
+
+Still to build:
+- **Bundles:** launch buyers funded from the same source, so one holder looks like many.
 - **Wash activity, in full:** wallets round-tripping with each other, clusters funded from the same source.
 
 Rules:
@@ -168,7 +171,7 @@ Rules:
 
 A receipt card proves an on-chain entry: token, entry tx hash, timestamp, market cap at entry, current market cap, and the multiple. It includes a BscScan link and is generated only from indexed on-chain data. **Never let users enter or edit receipt numbers.** Unverifiable receipts break the whole hype loop.
 
-- **A shared image can be edited.** Each card therefore needs a public link, and a QR code for it, that re-renders the receipt from indexed data. Until that exists, the person looking at a receipt cannot check it. Not built yet (step 10); `docs/0010-receipts.md` describes the card as it is.
+- **A shared image can be edited.** Each card therefore carries a public link, and a QR code for it, to the indexer's page that re-renders the receipt from indexed data (`docs/0015`). The app and the page build the receipt with the same code (`shared/src/receipt.ts`).
 - **A receipt proves one thing:** that the wallet shown bought that token at that time and price. It does not prove the wallet still holds, or made a profit. Copy on the card must not claim more.
 
 ## Trader records
@@ -209,7 +212,7 @@ A trader record is what a wallet did on Brew tokens: its entries, its exits, and
 - **External wallets:** whether connecting an existing wallet comes back as an option beside the embedded wallet. If not, uninstall the Reown and wagmi packages and turn off Supabase's Sign in with Ethereum provider, which is still enabled from `docs/0002`.
 - **Fomo features not yet decided:** Apple Pay or card funding (needs a payment provider and its compliance terms), Taproom paying network fees, and charging a per-trade fee. Each needs its own sign-off.
 - **Finding wallets to follow:** Discover is search by address or name, and a token's trades link to each trader's wallet screen. Whether v1 also lists wallets by their record is undecided; a ranked list is close to the leaderboard that is v2.
-- **Receipt verification page:** where the public link is hosted, and on what domain.
+- **Receipt verification page:** served by the indexer at `/r/<trade id>` (decided 2026-10-02, `docs/0015`). Still open: the domain, which the owner is getting, and where the indexer is deployed.
 - **Languages:** Brew's own site ships Chinese and Japanese (checked 2026-10-02). Taproom v1 is English-only, and Chinese is listed as v2 above; whether that still holds is undecided.
 - **Launchpad dependency:** whether Taproom stays Brew-only. See Positioning.
 - **Brew facts still unconfirmed:** the liquidity locker contracts, and the address of the older multi-pair v2 deployment.
@@ -226,10 +229,10 @@ A trader record is what a wallet did on Brew tokens: its entries, its exits, and
 - Before calling a task done, run:
   - `npx tsc --noEmit`
   - `npx expo lint`
-  - tests for anything in `src/features/safety`, `src/features/records` or `src/lib/chain`, and for record maths in `shared/`
+  - tests for anything in `src/features/safety`, `src/features/records` or `src/lib/chain`, and for the record, receipt and format code in `shared/`
 - Don't silence type errors with `any` or `@ts-ignore`; fix the type or explain why you can't.
 - Handle loading, empty, and error states on every screen that fetches data.
-- Format all on-chain numbers through shared helpers in `src/lib/chain` (decimals, market cap, short addresses), never inline.
+- Format all on-chain numbers through the shared helpers (decimals, market cap, short addresses), never inline. In the app, import them from `src/lib/chain/format`; they live in `shared/src/format.ts` so the indexer's receipt page prints numbers the same way.
 - Record decisions that would surprise a future reader in `docs/` as a short ADR.
 - **Keep the docs true.** When a change makes a statement in this file, a README or a decision record stale (a step built, a question settled, an address confirmed), fix it in the same change. In an accepted record, add a dated line under "Since then" instead of rewriting what was decided.
 

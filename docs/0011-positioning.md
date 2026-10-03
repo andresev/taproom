@@ -109,3 +109,5 @@ key export and withdrawal. These were added while writing and stand unless chang
 - 2026-10-02: step 8 is partly built (0012). The deployment blocks are confirmed and
   the multi-pair factories are indexed; the backfill from deployment has not been run.
 - 2026-10-02: step 9, trader records, has a first version (0013).
+- 2026-10-02: step 11, the Brew-specific safety inputs, has a first version (0014).
+- 2026-10-02: step 10, checkable receipts, is built apart from the production domain (0015).

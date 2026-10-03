@@ -11,6 +11,7 @@ import { bscscanTxUrl } from '@/lib/chain/explorer';
 import { Spacing } from '@/theme';
 
 import { ReceiptCard } from './receipt-card';
+import { receiptPageUrl } from './receipt-link';
 import { useReceipt } from './use-receipt';
 
 /** A receipt for one trade, with a button that shares the card as an image. */
@@ -28,6 +29,7 @@ export function ReceiptView({ tradeId }: { tradeId: string }) {
     return <ErrorState message={result.data?.reason ?? 'This receipt could not be built.'} />;
   }
   const { receipt } = result.data;
+  const pageUrl = receiptPageUrl(receipt.id);
 
   async function share() {
     setFailure(null);
@@ -54,6 +56,11 @@ export function ReceiptView({ tradeId }: { tradeId: string }) {
         <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
           {failure}
         </ThemedText>
+      ) : null}
+      {pageUrl ? (
+        <ExternalLink href={pageUrl}>
+          <ThemedText type="linkPrimary">Open the public receipt page</ThemedText>
+        </ExternalLink>
       ) : null}
       <ExternalLink href={bscscanTxUrl(receipt.txHash)}>
         <ThemedText type="linkPrimary">View the transaction on BscScan</ThemedText>

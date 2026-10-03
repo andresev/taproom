@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatMultiple, formatPoolFee, formatPrice, formatTimeAgo, formatUtcDateTime, formatTokenAmount, formatUsdCompact, shortAddress } from './format';
+import { formatMultiple, formatPoolFee, formatPrice, formatTimeAgo, formatUtcDateTime, formatTokenAmount, formatUsdCompact, shortAddress } from './format.js';
 
 describe('shortAddress', () => {
   it('shortens an address', () => {
@@ -48,6 +48,18 @@ describe('formatMultiple', () => {
     expect(formatMultiple(3.2)).toBe('3.2x');
     expect(formatMultiple(0.5)).toBe('0.5x');
     expect(formatMultiple(12.34)).toBe('12.3x');
+  });
+
+  it('truncates instead of rounding up', () => {
+    expect(formatMultiple(0.2499)).toBe('0.24x');
+    expect(formatMultiple(12.39)).toBe('12.3x');
+    expect(formatMultiple(1.999)).toBe('1.99x');
+  });
+
+  it('keeps digits that floating-point maths would lose', () => {
+    expect(formatMultiple(0.29)).toBe('0.29x');
+    expect(formatMultiple(1.15)).toBe('1.15x');
+    expect(formatMultiple(2)).toBe('2x');
   });
 });
 

@@ -4,6 +4,10 @@ import { SAFETY_CHECK_IDS, scoreToken } from './score';
 import type { SafetyCheck } from './types';
 
 const allPass: SafetyCheck[] = [
+  { id: 'origin', status: 'pass', reason: "Launched by Brew's standard factory" },
+  { id: 'deployer-record', status: 'pass', reason: 'No earlier launches by this deployer' },
+  { id: 'launch-holders', status: 'pass', reason: '2% of supply was bought at launch' },
+  { id: 'pair-asset', status: 'pass', reason: 'Brewed with WBNB.' },
   { id: 'dev-wallet', status: 'pass', reason: 'Deployer has not sold' },
   { id: 'holder-concentration', status: 'pass', reason: 'Top 10 holders own 12% of supply' },
   { id: 'contract', status: 'pass', reason: 'No owner privileges, mint or blacklist functions' },

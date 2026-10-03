@@ -74,3 +74,6 @@ score has loaded. Not on feed rows: each score needs its own simulation.
 - 2026-10-02: multi-pair tokens are indexed (0012). They use a 2,088-byte template,
   not the standard 1,991-byte one. The two tokens scanned had none of the listed
   functions; the template itself has not been reviewed.
+- 2026-10-02: 0014 added four Brew-specific inputs (origin, pair asset, deployer record,
+  buying at launch), so a score has nine. The dev-wallet reason no longer counts
+  the deployer's other launches; the deployer record does that.

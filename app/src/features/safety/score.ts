@@ -2,6 +2,10 @@ import type { SafetyCheck, SafetyCheckId, SafetyCheckStatus, SafetyLevel, Safety
 
 /** Every input a v1 score needs. One missing from the results counts as unknown. */
 export const SAFETY_CHECK_IDS: readonly SafetyCheckId[] = [
+  'origin',
+  'deployer-record',
+  'launch-holders',
+  'pair-asset',
   'dev-wallet',
   'holder-concentration',
   'contract',
@@ -10,6 +14,10 @@ export const SAFETY_CHECK_IDS: readonly SafetyCheckId[] = [
 ];
 
 const UNKNOWN_REASON: Record<SafetyCheckId, string> = {
+  origin: 'Origin: Unknown',
+  'deployer-record': 'Deployer record: Unknown',
+  'launch-holders': 'Buying at launch: Unknown',
+  'pair-asset': 'Pair asset: Unknown',
   'dev-wallet': 'Dev wallet activity: Unknown',
   'holder-concentration': 'Holder concentration: Unknown',
   contract: 'Contract checks: Unknown',

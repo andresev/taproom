@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
 
 import { bscscanTxUrl } from '@/lib/chain/explorer';
 import {
@@ -10,6 +11,7 @@ import {
 import { Spacing } from '@/theme';
 
 import type { Receipt } from './receipt';
+import { receiptPageUrl } from './receipt-link';
 
 // The card is shared as an image, so it uses its own fixed colours instead of
 // the device theme: the same receipt looks the same from any phone.
@@ -29,9 +31,12 @@ function Line({ label, value }: { label: string; value: string }) {
 
 /**
  * The shareable card. It only prints the receipt it is given; it has no inputs
- * and no state, so nothing on it can be edited.
+ * and no state, so nothing on it can be edited. When a public receipt page is
+ * configured, the card carries its address and a QR code for it, so anyone
+ * holding the image can check it against the chain.
  */
 export function ReceiptCard({ receipt }: { receipt: Receipt }) {
+  const pageUrl = receiptPageUrl(receipt.id);
   const symbol = receipt.token.symbol ?? shortAddress(receipt.token.address);
   const pair = receipt.pair.symbol ?? 'pair asset';
   const cap = (value: bigint) => `${formatTokenAmount(value, receipt.pair.decimals, 2)} ${pair}`;
@@ -70,6 +75,19 @@ export function ReceiptCard({ receipt }: { receipt: Receipt }) {
         value={receipt.currentMarketCap === null ? 'Unknown' : cap(receipt.currentMarketCap)}
       />
       <View style={styles.rule} />
+
+      {pageUrl ? (
+        <View style={styles.verify}>
+          {/* Dark on light with a quiet zone: what every QR scanner reads. */}
+          <View style={styles.qr}>
+            <QRCode value={pageUrl} size={84} color="#000000" backgroundColor="#FFFFFF" quietZone={6} ecl="M" />
+          </View>
+          <View style={styles.verifyText}>
+            <Text style={styles.label}>Check this receipt</Text>
+            <Text style={styles.small}>{pageUrl}</Text>
+          </View>
+        </View>
+      ) : null}
 
       <Text style={styles.small}>Transaction {shortAddress(receipt.txHash, 10)}</Text>
       <Text style={styles.small}>{bscscanTxUrl(receipt.txHash)}</Text>
@@ -138,5 +156,19 @@ const styles = StyleSheet.create({
   small: {
     color: MUTED,
     fontSize: 11,
+  },
+  verify: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    paddingVertical: Spacing.one,
+  },
+  qr: {
+    borderRadius: Spacing.two,
+    overflow: 'hidden',
+  },
+  verifyText: {
+    flex: 1,
+    gap: Spacing.one,
   },
 });

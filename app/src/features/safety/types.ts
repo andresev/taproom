@@ -1,5 +1,9 @@
 /** The inputs to a safety score. See CLAUDE.md "Safety model". */
 export type SafetyCheckId =
+  | 'origin'
+  | 'deployer-record'
+  | 'launch-holders'
+  | 'pair-asset'
   | 'dev-wallet'
   | 'holder-concentration'
   | 'contract'

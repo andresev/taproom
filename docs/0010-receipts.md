@@ -53,3 +53,6 @@ users can never enter or edit its numbers.
   buys, each opening its receipt, under the same coverage note as trader records
   (0013), since only buys in the indexed history can have a receipt. The public
   link and QR code are still not built.
+- 2026-10-02: the public link and QR code are built (0015). The receipt maths moved to
+  `shared/src/receipt.ts`, and multiples are now truncated as this record says;
+  `formatMultiple` had been rounding them.

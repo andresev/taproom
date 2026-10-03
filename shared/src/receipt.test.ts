@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildReceipt, marketCapMultiple, type ReceiptTradeRow } from './receipt';
+import { buildReceipt, marketCapMultiple, type ReceiptTradeRow } from './receipt.js';
 
 // A buy shaped like the indexer returns it. The price is RSUN's real pool price
 // (shared/src/price.test.ts): 1bn supply is worth 8006489484138914645 wei of WBNB.

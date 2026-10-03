@@ -3,7 +3,8 @@ import type { SafetyCheck } from './types';
 
 /**
  * The per-input rules: facts in, one check out, with a factual sentence. Pure
- * and deterministic. Thresholds are recorded in docs/0009-safety-checks.md.
+ * and deterministic. Thresholds are recorded in docs/0009-safety-checks.md and,
+ * for the Brew-specific inputs, docs/0014-brew-safety-inputs.md.
  *
  * Every function takes `null` to mean "could not be fetched" and returns
  * Unknown for it. Missing data is never a pass.
@@ -23,9 +24,27 @@ const WASH_TOP_WALLET_WARN_SHARE = 0.3;
 const WASH_TOP_WALLET_FAIL_SHARE = 0.6;
 /** Below this many trades, one wallet's share says little either way. */
 const WASH_MIN_TRADES = 10;
+/** An earlier launch "went badly" when its price fell to this share of its first price, or below. */
+const DEPLOYER_PRICE_FALL_BPS = 1_000;
+/** …or when its deployer sold at least this share of what they bought within an hour of launch. */
+const DEPLOYER_QUICK_SELL_BPS = 5_000;
+/** Earlier launches that went badly: warn from the first, fail from this many. */
+const DEPLOYER_BAD_LAUNCHES_FAIL = 3;
+/** Share of supply bought in the launch block and the next two. */
+const LAUNCH_BOUGHT_WARN_SHARE = 0.1;
+const LAUNCH_BOUGHT_FAIL_SHARE = 0.3;
+/** Pair assets that pass: Brew's own "Majors" and "Gold" groups. */
+const PASSING_PAIR_KINDS = new Set(['major', 'gold']);
+
+const FACTORY_LABELS: Record<string, string> = {
+  standard: 'standard',
+  multiPairV1: 'multi-pair v1',
+  multiPairV2: 'multi-pair v2',
+  dividend: 'dividend',
+};
 
 const percent = (share: number, digits = 0) => `${(share * 100).toFixed(digits)}%`;
-const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`;
+const plural = (count: number, word: string, words = `${word}s`) => `${count} ${count === 1 ? word : words}`;
 
 /** "39 seconds", "10 minutes", "3 hours", "2 days". */
 function duration(seconds: number): string {
@@ -40,13 +59,9 @@ export function devWalletCheck(facts: SafetyFacts['devWallet']): SafetyCheck {
 
   const bought = BigInt(facts.bought);
   const sold = BigInt(facts.sold);
-  const others =
-    facts.otherLaunches > 0
-      ? ` This wallet has ${facts.otherLaunches} other indexed ${facts.otherLaunches === 1 ? 'launch' : 'launches'}.`
-      : '';
 
   if (sold === 0n) {
-    return { id: 'dev-wallet', status: 'pass', reason: `Deployer has not sold any of this token.${others}` };
+    return { id: 'dev-wallet', status: 'pass', reason: 'Deployer has not sold any of this token.' };
   }
 
   // Selling tokens that were never bought through the pool counts as selling all of them.
@@ -58,7 +73,7 @@ export function devWalletCheck(facts: SafetyFacts['devWallet']): SafetyCheck {
   return {
     id: 'dev-wallet',
     status: share >= DEV_SOLD_FAIL_SHARE ? 'fail' : 'warn',
-    reason: `Deployer sold ${percent(share)} of the tokens they bought${when}.${others}`,
+    reason: `Deployer sold ${percent(share)} of the tokens they bought${when}.`,
   };
 }
 
@@ -142,12 +157,128 @@ export function washActivityCheck(facts: SafetyFacts['washActivity']): SafetyChe
   };
 }
 
+export function originCheck(facts: SafetyFacts['origin']): SafetyCheck {
+  if (!facts) return { id: 'origin', status: 'unknown', reason: 'Origin: Unknown' };
+  if (facts.factory === null) {
+    return { id: 'origin', status: 'fail', reason: 'Not launched by a Brew factory Taproom knows.' };
+  }
+  const factory = `Brew's ${FACTORY_LABELS[facts.factory] ?? facts.factory} factory`;
+  if (facts.matchesTemplate === null) {
+    return { id: 'origin', status: 'unknown', reason: `Launched by ${factory}; its contract template is not recorded.` };
+  }
+  if (!facts.matchesTemplate) {
+    return {
+      id: 'origin',
+      status: 'warn',
+      reason: `Launched by ${factory}, but its code differs from the template other tokens from that factory share.`,
+    };
+  }
+  return {
+    id: 'origin',
+    status: 'pass',
+    reason: `Launched by ${factory}; its code is the template every token from that factory shares.`,
+  };
+}
+
+const PAIR_KIND_WORDS: Record<NonNullable<SafetyFacts['pairAssets']>[number]['kind'], string> = {
+  major: 'a major asset',
+  gold: 'tokenized gold',
+  brew: 'the $BREW token',
+  'brew-token': 'another Brew token',
+  'tokenized-stock': 'a tokenized stock',
+  other: 'another token',
+};
+
+export function pairAssetCheck(facts: SafetyFacts['pairAssets']): SafetyCheck {
+  if (!facts || facts.length === 0) return { id: 'pair-asset', status: 'unknown', reason: 'Pair asset: Unknown' };
+  const name = (asset: (typeof facts)[number]) => asset.pairSymbol ?? asset.pairToken;
+  const risky = facts.filter((asset) => !PASSING_PAIR_KINDS.has(asset.kind));
+  if (risky.length === 0) {
+    return { id: 'pair-asset', status: 'pass', reason: `Brewed with ${facts.map(name).join(' and ')}.` };
+  }
+  const described = risky.map((asset) => `${name(asset)} (${PAIR_KIND_WORDS[asset.kind]})`).join(' and ');
+  return {
+    id: 'pair-asset',
+    status: 'warn',
+    reason: `Liquidity is priced in ${described}, and can lose value with ${risky.length === 1 ? 'it' : 'them'}.`,
+  };
+}
+
+/** "since 2026-10-01 04:16 UTC", or how the history is bounded when its start is not known. */
+function historyPhrase(facts: NonNullable<SafetyFacts['deployerRecord']>): string {
+  if (facts.historyComplete) return 'in Brew history';
+  if (facts.historyFrom === null) return 'since the indexer last started';
+  return `since ${new Date(facts.historyFrom * 1000).toISOString().slice(0, 16).replace('T', ' ')} UTC`;
+}
+
+export function deployerRecordCheck(facts: SafetyFacts['deployerRecord']): SafetyCheck {
+  if (!facts) return { id: 'deployer-record', status: 'unknown', reason: 'Deployer record: Unknown' };
+  const period = historyPhrase(facts);
+  if (facts.earlierLaunchCount === 0) {
+    return { id: 'deployer-record', status: 'pass', reason: `No earlier launches by this deployer ${period}.` };
+  }
+
+  let fell = 0;
+  let quickSold = 0;
+  let bad = 0;
+  for (const launch of facts.earlierLaunches) {
+    const didFall = launch.lastToFirstPriceBps !== null && launch.lastToFirstPriceBps <= DEPLOYER_PRICE_FALL_BPS;
+    const didSell = launch.soldWithinHourBps !== null && launch.soldWithinHourBps >= DEPLOYER_QUICK_SELL_BPS;
+    if (didFall) fell++;
+    if (didSell) quickSold++;
+    if (didFall || didSell) bad++;
+  }
+
+  const examined = facts.earlierLaunches.length;
+  const scope =
+    examined < facts.earlierLaunchCount
+      ? `${plural(facts.earlierLaunchCount, 'earlier launch', 'earlier launches')} ${period} (newest ${examined} examined)`
+      : `${plural(facts.earlierLaunchCount, 'earlier launch', 'earlier launches')} ${period}`;
+  const details =
+    bad === 0
+      ? 'none fell 90% or more from its first price, and in none did the deployer sell half or more within an hour'
+      : [
+          `${bad} went badly`,
+          fell > 0 ? `${fell} fell 90% or more from its first price` : null,
+          quickSold > 0 ? `in ${quickSold} the deployer sold half or more within an hour` : null,
+        ]
+          .filter((part) => part !== null)
+          .join('; ');
+  return {
+    id: 'deployer-record',
+    status: bad >= DEPLOYER_BAD_LAUNCHES_FAIL ? 'fail' : bad > 0 ? 'warn' : 'pass',
+    reason: `Deployer has ${scope}: ${details}.`,
+  };
+}
+
+export function launchHoldersCheck(facts: SafetyFacts['launchHolders']): SafetyCheck {
+  if (!facts) return { id: 'launch-holders', status: 'unknown', reason: 'Buying at launch: Unknown' };
+  const supply = BigInt(facts.totalSupply);
+  if (supply <= 0n) return { id: 'launch-holders', status: 'unknown', reason: 'Buying at launch: Unknown' };
+
+  const share = Number((BigInt(facts.bought) * 1_000_000n) / supply) / 1_000_000;
+  const deployerShare = Number((BigInt(facts.deployerBought) * 1_000_000n) / supply) / 1_000_000;
+  const who =
+    facts.wallets === 0
+      ? ''
+      : `, by ${plural(facts.wallets, 'wallet')}${deployerShare > 0 ? ` (the deployer: ${percent(deployerShare, 1)})` : ''}`;
+  return {
+    id: 'launch-holders',
+    status: share >= LAUNCH_BOUGHT_FAIL_SHARE ? 'fail' : share >= LAUNCH_BOUGHT_WARN_SHARE ? 'warn' : 'pass',
+    reason: `${percent(share, 1)} of supply was bought in the launch block and the next ${facts.blocks - 1}${who}. Wallets funded from one source are not detected.`,
+  };
+}
+
 /**
- * All five checks. `facts` is null when the indexer could not be reached, which
+ * Every check. `facts` is null when the indexer could not be reached, which
  * leaves only holder concentration (computed by the app) possibly known.
  */
 export function checksFromFacts(facts: SafetyFacts | null, topTenHolderShare: number | null): SafetyCheck[] {
   return [
+    originCheck(facts?.origin ?? null),
+    deployerRecordCheck(facts?.deployerRecord ?? null),
+    launchHoldersCheck(facts?.launchHolders ?? null),
+    pairAssetCheck(facts?.pairAssets ?? null),
     devWalletCheck(facts?.devWallet ?? null),
     holderConcentrationCheck(topTenHolderShare),
     contractCheck(facts?.contract ?? null),

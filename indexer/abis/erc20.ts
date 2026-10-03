@@ -9,6 +9,9 @@ export const erc20MetadataAbi = parseAbi([
   "function symbol() view returns (string)",
 ]);
 
+/** Total supply now, for a receipt's current market cap. */
+export const erc20SupplyAbi = parseAbi(["function totalSupply() view returns (uint256)"]);
+
 /** What the sell simulation needs from a token: approve the router, read a balance. */
 export const erc20TradeAbi = parseAbi([
   "function approve(address spender, uint256 amount) returns (bool)",

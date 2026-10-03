@@ -16,3 +16,12 @@ export const pancakeV3PoolAbi = parseAbi([
  * pools, whose PoolAdded event does not carry it. Checked on a live pool.
  */
 export const pancakeV3PoolFeeAbi = parseAbi(["function fee() view returns (uint24)"]);
+
+/**
+ * The pool's `slot0`, for the price now. PancakeSwap's `feeProtocol` is a uint32,
+ * not Uniswap's uint8; same ABI as app/src/lib/chain/abis/pancake-v3-pool.ts,
+ * which was checked against a live Brew pool.
+ */
+export const pancakeV3PoolSlot0Abi = parseAbi([
+  "function slot0() view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint32 feeProtocol, bool unlocked)",
+]);
