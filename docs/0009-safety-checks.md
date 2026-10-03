@@ -71,3 +71,6 @@ score has loaded. Not on feed rows: each score needs its own simulation.
   above: every token the indexer covers shares it, so the contract check passes for
   all of them and the sell simulation is expected to, which leaves three inputs to
   tell tokens apart.
+- 2026-10-02: multi-pair tokens are indexed (0012). They use a 2,088-byte template,
+  not the standard 1,991-byte one. The two tokens scanned had none of the listed
+  functions; the template itself has not been reviewed.

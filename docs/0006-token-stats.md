@@ -53,3 +53,5 @@ indexer knew launches, pools and trades only.
 - 2026-10-02: figures are still in the pair asset. Trader records (0011, MVP step 9)
   will need a way to compare results across pair assets, which is the USD follow-up
   noted above.
+- 2026-10-02: multi-pair tokens are indexed (0012), so "only the token's first pool
+  is priced" now applies to real tokens. Which pool the app should use is open.

@@ -17,11 +17,11 @@ Taproom is an **independent, community-built app. It is not affiliated with or e
 ### Brew context (domain knowledge)
 - Brew is a token launchpad on BSC, live since early September 2026. Tokens launch directly into **PancakeSwap V3** pools with **permanently locked liquidity** (no bonding curve).
 - Tokens are "brewed with" a pair asset: WBNB, USDT, the native **$BREW** token, other memecoins, or tokenized stocks ("bStocks"). A Brew token can be brewed with another Brew token.
-- Brew has **five launch factories**: standard (about 89% of launches on 2026-10-01), dividend, multi-pair v1, and two deployments of multi-pair v2. A multi-pair launch gives one token several pools. Only the standard factory is indexed so far (`docs/0004-indexer-and-feed.md`).
-- Standard-factory tokens share one contract template with no owner, mint, blacklist or tax-setting functions (`docs/0009-safety-checks.md`).
+- Brew has **five launch factories**: standard (about 89% of launches on 2026-10-01), dividend, multi-pair v1, and two deployments of multi-pair v2. A multi-pair launch gives one token several pools. The standard factory, multi-pair v1 and the current multi-pair v2 are indexed; the dividend factory and the older v2 deployment are not (`docs/0012-indexer-history-and-coverage.md`).
+- Standard-factory tokens share one contract template with no owner, mint, blacklist or tax-setting functions (`docs/0009-safety-checks.md`). Multi-pair tokens use a different template; the two scanned had none of those functions either (`docs/0012`).
 - Trading fee is 1%; the token side of the fee is burned. The pair side is reported to be split between the creator and the protocol, and a creator can route their share to holders or to buyback-and-burn. That split comes from secondary sources: check it on-chain before relying on it.
 - $BREW contract: `0xfa6d9b504848606eb9aec04ccc161d169b3f2159`
-- Confirmed addresses live in `shared/src/addresses.ts`, each with a comment saying where it came from. `app/src/lib/chain/addresses.ts` re-exports them. Still unconfirmed: the standard factory's deployment block and Brew's liquidity locker contract.
+- Confirmed addresses live in `shared/src/addresses.ts`, each with a comment saying where it came from, with each factory's deployment block beside them. `app/src/lib/chain/addresses.ts` re-exports the addresses. Still unconfirmed: Brew's liquidity locker contracts. Brew's site bundle names one per factory; none has been checked on-chain.
 
 **Never guess or invent a contract address, ABI, or event signature.** If one is needed and not in `addresses.ts`, stop and ask.
 
@@ -34,7 +34,7 @@ Set on 2026-10-02 at the project owner's request. The decision is in `docs/0011-
 - **Taproom must be best at two things:**
   1. **Provable records.** Receipts and trader records computed only from indexed chain data, losses included, that anyone can check without trusting a screenshot.
   2. **Brew-specific risk reading.** What generic scanners do not compute per launchpad: a deployer's record across Brew launches, who held the supply in the first blocks, and what the pair asset adds to the risk.
-- **Both depend on complete indexed history.** A record built from partial history is not verified: say what period it covers, or do not show it.
+- **Both depend on complete indexed history.** A record built from partial history is not verified: say what period it covers, or do not show it. The indexer's `/coverage` route is where that period comes from.
 - **Nobody ships a social layer for Brew yet, Brew included** (checked 2026-10-02). That is a head start, not a moat: Brew or a larger app could add one.
 - **Taproom's ceiling is Brew's volume.** Keep launch, pool and trade data free of Brew-only assumptions so a second launchpad could be added without a rewrite. Adding one is not v1 work.
 
@@ -58,7 +58,7 @@ Each step has a first version. The record named beside it says what was built an
 
 These are the steps that serve the positioning. `docs/0011` has the reasoning.
 
-8. **Indexer history and coverage** — backfill from the standard factory's deployment block, then index the multi-pair factories. The block is unconfirmed and backfill needs an RPC that serves old logs. The dividend factory waits on its open question. Steps 9 to 11 are only as good as this.
+8. **Indexer history and coverage** — backfill from the standard factory's deployment block, and index the multi-pair factories. Partly built (`docs/0012`): the deployment blocks are confirmed, multi-pair v1 and v2 are indexed, and `GET /coverage` says which factories are indexed and from which block. The backfill has not been run: it needs an RPC that serves old logs, and a fix for how Ponder requests logs once a factory has 1,000 child contracts. The dividend factory waits on its open question. Steps 9 to 11 are only as good as this.
 9. **Trader records** — on the wallet screen, a wallet's entries, exits and results on Brew tokens, computed from the indexer (see Trader records). The wallet screen is a placeholder today.
 10. **Checkable receipts** — a public link, and a QR code on the card, that re-renders the receipt from indexed data; and a list of the user's own receipts (see Receipts).
 11. **Brew-specific safety inputs** — deployer record, launch-time holders, pair-asset risk and origin (see Safety model).
@@ -86,7 +86,7 @@ Check `package.json` first. If the repo already uses a library for a job, follow
 - **Wallet:** an embedded self-custodial wallet from **Privy** (the provider Fomo uses), with **viem**. `viem` is pinned to 2.56.0 in the app and the indexer, the version Privy's SDK requires; do not bump it on its own. Check current Privy docs for Expo setup and BSC support; don't rely on memory. The earlier Reown AppKit (WalletConnect) flow has been removed from the app's code; its packages remain installed until the external-wallet question below is settled.
 - **Server data:** TanStack Query. **Client state:** Zustand. Keep both thin.
 - **Styling:** React Native `StyleSheet` with the theme tokens in `app/src/theme` (`docs/0001`). Do not add NativeWind.
-- **Indexer:** separate TypeScript service in `/indexer`, built on Ponder: PGlite in development, Postgres when `DATABASE_URL` is set. It indexes Brew launches, PancakeSwap V3 swaps in Brew pools and Brew token transfers on BSC, and serves GraphQL plus the `/activity` and `/safety` routes. Anything that needs a server-side RPC key goes in its API routes.
+- **Indexer:** separate TypeScript service in `/indexer`, built on Ponder: PGlite in development, Postgres when `DATABASE_URL` is set. It indexes Brew launches, PancakeSwap V3 swaps in Brew pools and Brew token transfers on BSC, and serves GraphQL plus the `/activity`, `/safety` and `/coverage` routes. Anything that needs a server-side RPC key goes in its API routes.
 - **App backend:** Supabase (Postgres, auth, realtime) for profiles, follows, and push tokens, plus the `privy-session` edge function that turns a Privy sign-in into a Supabase session. On-chain data stays in the indexer's database. The feed polls every 10 seconds in v1; switch to realtime once it works.
 - **Share images:** `react-native-view-shot` + `expo-sharing`.
 - **Errors/telemetry:** Sentry on mobile; structured JSON logs in the indexer. Every feed query, quote, and swap should be traceable. Sentry is **not installed yet** (`docs/0008`): it is a requirement before the first release build, and adding it follows "ask before adding a dependency".
@@ -141,7 +141,7 @@ Modelled on the Fomo app. Signed off by the project owner on 2026-10-02; this re
 
 Every token shows a score (Safe / Caution / Danger) **and the reasons**. Never show a score without its reasons.
 
-Standard-factory tokens share one template, so the contract check passes for every token Taproom indexes, and the sell simulation is expected to as well. Neither tells one Brew token from another. The inputs that differ between tokens carry the score, which is why the Brew-specific inputs are step 11.
+Standard-factory tokens share one template, so the contract check passes for every one of them, and the sell simulation is expected to as well. Neither tells one standard Brew token from another. Multi-pair tokens use a second template; the two tokens scanned passed both checks, which is not yet a review of that template (`docs/0012`). The inputs that differ between tokens carry the score, which is why the Brew-specific inputs are step 11.
 
 Inputs built (`docs/0009-safety-checks.md` has the thresholds and what each input leaves out):
 - **Dev wallet:** has the deployer sold, how much, how fast after launch.
@@ -203,7 +203,7 @@ A trader record is what a wallet did on Brew tokens: its entries, its exits, and
   - (iii) exchange features only in regions where the app has the licensing for them;
   - (iv) "crypto-securities or quasi-securities trading" must come from approved financial institutions;
   - (v) no offering currency for tasks such as inviting users or posting.
-- **bStock-paired tokens:** whether Taproom shows them, and whether it lets users buy them, given 3.1.5(iv).
+- **bStock-paired tokens:** whether Taproom shows them, and whether it lets users buy them, given 3.1.5(iv). Nothing filters them today, and indexed multi-pair launches include bStock pools (`docs/0012`).
 - **Dividend-factory tokens:** whether Taproom shows or trades Brew tokens that route fees to holders. The "no dividends" rule above is about Taproom's own offering and does not answer this.
 - **External wallets:** whether connecting an existing wallet comes back as an option beside the embedded wallet. If not, uninstall the Reown and wagmi packages and turn off Supabase's Sign in with Ethereum provider, which is still enabled from `docs/0002`.
 - **Fomo features not yet decided:** Apple Pay or card funding (needs a payment provider and its compliance terms), Taproom paying network fees, and charging a per-trade fee. Each needs its own sign-off.
@@ -211,7 +211,9 @@ A trader record is what a wallet did on Brew tokens: its entries, its exits, and
 - **Receipt verification page:** where the public link is hosted, and on what domain.
 - **Languages:** Brew's own site ships Chinese and Japanese (checked 2026-10-02). Taproom v1 is English-only, and Chinese is listed as v2 above; whether that still holds is undecided.
 - **Launchpad dependency:** whether Taproom stays Brew-only. See Positioning.
-- **Brew facts still unconfirmed:** the standard factory's deployment block, and the liquidity locker contract.
+- **Brew facts still unconfirmed:** the liquidity locker contracts, and the address of the older multi-pair v2 deployment.
+- **Backfill:** which keyed RPC provider to use, and how to keep Ponder's log requests filtered by address past 1,000 child contracts (`docs/0012`).
+- **Multi-pair tokens in the app:** which of a token's pools the token page prices and the buy flow trades through. Today it is whichever the indexer returns first.
 - Taproom token: name, ticker, and mechanics are not final. Planned direction: holding unlocks pro features; in-app launch fees paid in the token are burned; season rewards are cosmetics or fee discounts. Rewards must not pay users for inviting or posting (Apple 3.1.5(v)). Do not build token features in v1.
 
 ## How to work in this repo

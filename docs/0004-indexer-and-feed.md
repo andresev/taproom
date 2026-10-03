@@ -90,3 +90,6 @@ launched token of one pool and the pair token of another.
 - 2026-10-02: 0011 makes history and factory coverage the next work (MVP step 8),
   ahead of new app features. The standard factory's deployment block is still
   unconfirmed, and the dividend-factory question is still open.
+- 2026-10-02: 0012 confirmed the standard factory's deployment block (120,201,671)
+  and added the multi-pair v1 and v2 factories to the indexer. The backfill itself
+  has not been run, so "No history yet" above still holds.

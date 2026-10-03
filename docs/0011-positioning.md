@@ -103,3 +103,8 @@ key export and withdrawal. These were added while writing and stand unless chang
 - https://en.bloomingbit.io/feed/news/121378 (Fomo users and volume)
 - https://www.upshift.finance/blog/what-is-the-fomo-app (Fomo on BNB Chain)
 - https://developer.apple.com/app-store/review/guidelines/ (guideline 3.1.5)
+
+## Since then
+
+- 2026-10-02: step 8 is partly built (0012). The deployment blocks are confirmed and
+  the multi-pair factories are indexed; the backfill from deployment has not been run.

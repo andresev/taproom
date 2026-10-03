@@ -1,7 +1,10 @@
-import { ponder } from "ponder:registry";
+import { ADDRESSES } from "@repo/shared";
+import { ponder, type Context, type IndexingFunctionArgs } from "ponder:registry";
 import { holder, pendingSwap, pool, token, tokenStats, trade } from "ponder:schema";
 
 import { erc20MetadataAbi } from "../abis/erc20";
+import { pancakeV3PoolFeeAbi } from "../abis/pancake-v3-pool";
+import { MAX_PAIRS, MULTI_PAIR_V1_POOL_OFFSETS, multiPairV1PoolName } from "./factories";
 import { applyTransfer, holderId } from "./holders";
 import { isToken0, tradeFromSwap, tradeId } from "./swap";
 
@@ -14,21 +17,68 @@ function log(event: string, fields: Record<string, unknown>) {
   console.log(JSON.stringify({ service: "indexer", event, ...fields }));
 }
 
-ponder.on("BrewFactory:TokenLaunched", async ({ event, context }) => {
-  const tokenAddress = lower(event.args.token);
-  const pairToken = lower(event.args.quoteToken);
-  const poolAddress = lower(event.args.pool);
+/** The part of any event that a launch or pool row is stamped with. */
+interface EventOrigin {
+  block: { number: bigint; timestamp: bigint };
+  transaction: { hash: `0x${string}` };
+}
 
-  // A token's decimals and symbol never change, so they are read at the latest
-  // block ("immutable") instead of the launch block. Reading at an old block needs
-  // an archive node, which would make any backfill depend on one.
-  const [decimals, pairDecimals, pairSymbol] = await Promise.all([
-    context.client.readContract({
-      abi: erc20MetadataAbi,
-      address: tokenAddress,
-      functionName: "decimals",
-      cache: "immutable",
-    }),
+interface LaunchedToken {
+  token: `0x${string}`;
+  /** The factory that emitted the launch event. */
+  factory: `0x${string}`;
+  creator: `0x${string}`;
+  name: string;
+  symbol: string;
+  totalSupply: bigint;
+  metadataURI: string;
+}
+
+/** Records a launched token. Every factory's launch event carries these fields. */
+async function recordToken(context: Context, origin: EventOrigin, launch: LaunchedToken) {
+  const tokenAddress = lower(launch.token);
+  // A token's decimals never change, so they are read at the latest block
+  // ("immutable") instead of the launch block. Reading at an old block needs an
+  // archive node, which would make any backfill depend on one.
+  const decimals = await context.client.readContract({
+    abi: erc20MetadataAbi,
+    address: tokenAddress,
+    functionName: "decimals",
+    cache: "immutable",
+  });
+
+  await context.db.insert(token).values({
+    address: tokenAddress,
+    symbol: launch.symbol,
+    name: launch.name,
+    decimals,
+    totalSupply: launch.totalSupply,
+    deployer: lower(launch.creator),
+    factory: lower(launch.factory),
+    metadataUri: launch.metadataURI,
+    launchTxHash: lower(origin.transaction.hash),
+    launchBlock: origin.block.number,
+    launchedAt: origin.block.timestamp,
+  });
+}
+
+interface LaunchedPool {
+  pool: `0x${string}`;
+  token: `0x${string}`;
+  pairToken: `0x${string}`;
+  fee: number;
+}
+
+/**
+ * Records one pool of a launch, then turns the swap that was waiting for it, if
+ * any, into a trade: a launch's initial buy is emitted before the launch event.
+ */
+async function recordPool(context: Context, origin: EventOrigin, launched: LaunchedPool) {
+  const poolAddress = lower(launched.pool);
+  const tokenAddress = lower(launched.token);
+  const pairToken = lower(launched.pairToken);
+
+  const [pairDecimals, pairSymbol] = await Promise.all([
     context.client.readContract({
       abi: erc20MetadataAbi,
       address: pairToken,
@@ -42,18 +92,6 @@ ponder.on("BrewFactory:TokenLaunched", async ({ event, context }) => {
   ]);
   const tokenIsToken0 = isToken0(tokenAddress, pairToken);
 
-  await context.db.insert(token).values({
-    address: tokenAddress,
-    symbol: event.args.symbol,
-    name: event.args.name,
-    decimals,
-    totalSupply: event.args.totalSupply,
-    deployer: lower(event.args.creator),
-    metadataUri: event.args.metadataURI,
-    launchTxHash: lower(event.transaction.hash),
-    launchBlock: event.block.number,
-    launchedAt: event.block.timestamp,
-  });
   await context.db.insert(pool).values({
     address: poolAddress,
     token: tokenAddress,
@@ -61,40 +99,95 @@ ponder.on("BrewFactory:TokenLaunched", async ({ event, context }) => {
     pairSymbol,
     pairDecimals,
     tokenIsToken0,
-    fee: event.args.fee,
-    createdBlock: event.block.number,
+    fee: launched.fee,
+    createdBlock: origin.block.number,
   });
 
-  // The launch's initial buy, if any, was emitted before this event.
-  const pendingId = pendingSwapId(event.transaction.hash, poolAddress);
+  const pendingId = pendingSwapId(origin.transaction.hash, poolAddress);
   const pending = await context.db.find(pendingSwap, { id: pendingId });
-  if (pending) {
-    const amounts = tradeFromSwap(tokenIsToken0, pending);
-    if (amounts) {
-      await context.db
-        .insert(trade)
-        .values({
-          id: tradeId(pending.txHash, pending.logIndex),
-          txHash: pending.txHash,
-          logIndex: pending.logIndex,
-          wallet: pending.wallet,
-          token: tokenAddress,
-          pool: poolAddress,
-          pairToken,
-          sqrtPriceX96: pending.sqrtPriceX96,
-          blockNumber: pending.blockNumber,
-          blockTime: pending.blockTime,
-          ...amounts,
-        })
-        .onConflictDoNothing();
-    }
-    await context.db.delete(pendingSwap, { id: pendingId });
-  }
+  if (!pending) return;
 
-  log("launch", { token: tokenAddress, pool: poolAddress, block: event.block.number.toString() });
+  const amounts = tradeFromSwap(tokenIsToken0, pending);
+  if (amounts) {
+    await context.db
+      .insert(trade)
+      .values({
+        id: tradeId(pending.txHash, pending.logIndex),
+        txHash: pending.txHash,
+        logIndex: pending.logIndex,
+        wallet: pending.wallet,
+        token: tokenAddress,
+        pool: poolAddress,
+        pairToken,
+        sqrtPriceX96: pending.sqrtPriceX96,
+        blockNumber: pending.blockNumber,
+        blockTime: pending.blockTime,
+        ...amounts,
+      })
+      .onConflictDoNothing();
+  }
+  await context.db.delete(pendingSwap, { id: pendingId });
+}
+
+ponder.on("BrewFactory:TokenLaunched", async ({ event, context }) => {
+  await recordToken(context, event, { ...event.args, factory: ADDRESSES.brewFactory });
+  await recordPool(context, event, { ...event.args, pairToken: event.args.quoteToken });
+
+  log("launch", {
+    factory: "standard",
+    token: lower(event.args.token),
+    pool: lower(event.args.pool),
+    block: event.block.number.toString(),
+  });
 });
 
-ponder.on("BrewPool:Swap", async ({ event, context }) => {
+// Multi-pair v1: one event names every pool of the launch.
+ponder.on("BrewMultiPairFactory:TokenLaunchedMultiPair", async ({ event, context }) => {
+  const { quoteTokens, pools } = event.args;
+  await recordToken(context, event, { ...event.args, factory: ADDRESSES.brewMultiPairFactory });
+  for (const [index, poolAddress] of pools.entries()) {
+    const pairToken = quoteTokens[index];
+    if (!pairToken) continue;
+    await recordPool(context, event, { pool: poolAddress, token: event.args.token, pairToken, fee: event.args.fee });
+  }
+
+  const fields = {
+    factory: "multiPairV1",
+    token: lower(event.args.token),
+    pools: pools.map(lower),
+    block: event.block.number.toString(),
+  };
+  log("launch", fields);
+  // Swaps are followed only in the pool positions ponder.config.ts registers. A
+  // launch with more pairs than that has pools whose trades are not indexed.
+  if (pools.length > MAX_PAIRS) log("launch_pools_not_followed", { ...fields, followed: MAX_PAIRS });
+});
+
+// Multi-pair v2: the launch is spread over several transactions. LaunchStarted
+// names the token; each pool then arrives in its own PoolAdded.
+ponder.on("BrewMultiPairFactoryV2:LaunchStarted", async ({ event, context }) => {
+  await recordToken(context, event, { ...event.args, factory: ADDRESSES.brewMultiPairFactoryV2 });
+  log("launch", { factory: "multiPairV2", token: lower(event.args.token), block: event.block.number.toString() });
+});
+
+ponder.on("BrewMultiPairFactoryV2:PoolAdded", async ({ event, context }) => {
+  // PoolAdded does not carry the fee, so it is read from the pool, where it never changes.
+  const fee = await context.client.readContract({
+    abi: pancakeV3PoolFeeAbi,
+    address: event.args.pool,
+    functionName: "fee",
+    cache: "immutable",
+  });
+  await recordPool(context, event, { ...event.args, pairToken: event.args.quoteToken, fee });
+  log("pool_added", {
+    factory: "multiPairV2",
+    token: lower(event.args.token),
+    pool: lower(event.args.pool),
+    block: event.block.number.toString(),
+  });
+});
+
+async function onSwap({ event, context }: IndexingFunctionArgs<"BrewPool:Swap">) {
   const poolAddress = lower(event.log.address);
   // The trader is whoever sent the transaction. The event's own sender and
   // recipient are usually a router, not the wallet behind the trade.
@@ -140,9 +233,9 @@ ponder.on("BrewPool:Swap", async ({ event, context }) => {
       ...amounts,
     })
     .onConflictDoNothing();
-});
+}
 
-ponder.on("BrewToken:Transfer", async ({ event, context }) => {
+async function onTransfer({ event, context }: IndexingFunctionArgs<"BrewToken:Transfer">) {
   const tokenAddress = lower(event.log.address);
   const from = lower(event.args.from);
   const to = lower(event.args.to);
@@ -175,4 +268,12 @@ ponder.on("BrewToken:Transfer", async ({ event, context }) => {
       .values({ token: tokenAddress, holderCount: effect.holderDelta })
       .onConflictDoUpdate((row) => ({ holderCount: row.holderCount + effect.holderDelta }));
   }
-});
+}
+
+// The pools and tokens of every indexed factory are handled alike; ponder.config.ts
+// says why each has its own contract entry.
+const POOL_SOURCES = ["BrewPool", "MultiPairV2Pool", ...MULTI_PAIR_V1_POOL_OFFSETS.map(multiPairV1PoolName)] as const;
+const TOKEN_SOURCES = ["BrewToken", "MultiPairV1Token", "MultiPairV2Token"] as const;
+
+for (const source of POOL_SOURCES) ponder.on(`${source}:Swap`, onSwap);
+for (const source of TOKEN_SOURCES) ponder.on(`${source}:Transfer`, onTransfer);

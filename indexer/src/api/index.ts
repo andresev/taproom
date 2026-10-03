@@ -4,6 +4,8 @@ import { db } from "ponder:api";
 import schema from "ponder:schema";
 
 import { ACTIVITY_LIMIT, activityRequestSchema, type ActivityRow } from "../activity";
+import { buildCoverage } from "../coverage";
+import { loadEnv } from "../env";
 import { safetyRequestSchema, type SafetyFacts } from "../safety";
 import { gatherSafetyFacts } from "./safety-facts";
 
@@ -139,6 +141,15 @@ app.post("/activity", async (c) => {
   );
   return c.json({ items });
 });
+
+/**
+ * Which factories are indexed and from which block. A record built from the
+ * index is only as complete as this says: callers that present history (trader
+ * records, a deployer's earlier launches) state the period from it. It does not
+ * say how far the sync has got; Ponder's own /ready and /status do.
+ */
+const coverage = buildCoverage(loadEnv().START_BLOCK);
+app.get("/coverage", (c) => c.json(coverage));
 
 /** How long one token's facts are reused. The simulation is the costly part. */
 const SAFETY_CACHE_MS = 60_000;

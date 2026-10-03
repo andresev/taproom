@@ -48,10 +48,12 @@ npm run dev:indexer                      # http://localhost:42069
 npm run dev:app                          # Expo dev server
 ```
 
-The indexer registers Brew's standard launch factory. With `START_BLOCK` unset it
-starts at the chain head, so it sees only launches made after it starts and trades
-in those tokens. Full history needs the factory's deployment block and an RPC that
-serves old logs (`docs/0004-indexer-and-feed.md`).
+The indexer registers Brew's standard and multi-pair launch factories. With
+`START_BLOCK` unset it starts at the chain head, so it sees only launches made after
+it starts and trades in those tokens. The standard factory was deployed at block
+120201671; full history from there needs an RPC that serves old logs, and has not
+been run yet (`docs/0012-indexer-history-and-coverage.md`). `GET /coverage` on the
+indexer says which factories are indexed and from which block.
 
 ## Everyday commands
 

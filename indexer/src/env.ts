@@ -12,7 +12,8 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env) {
     DATABASE_URL: z.url().optional(),
     /**
      * First block to index. Unset starts from the chain head, so nothing older is
-     * indexed; set it to the Brew factory's deployment block for the full history.
+     * indexed; set it to the standard factory's deployment block
+     * (DEPLOYMENT_BLOCKS in @repo/shared) for the full history.
      */
     START_BLOCK: z.coerce.number().int().positive().optional(),
   });

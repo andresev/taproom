@@ -15,6 +15,8 @@ export const token = onchainTable(
     totalSupply: t.bigint().notNull(),
     /** Dev wallet: the wallet that launched the token. */
     deployer: t.hex().notNull(),
+    /** The launch factory that created the token. Says which launchpad and template it came from. */
+    factory: t.hex().notNull(),
     /** As emitted at launch: usually a data: URI holding JSON with a description and image. */
     metadataUri: t.text(),
     launchTxHash: t.hex().notNull(),

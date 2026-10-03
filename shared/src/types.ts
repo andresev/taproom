@@ -20,6 +20,8 @@ export interface Token {
   totalSupply: bigint;
   /** Dev wallet: the wallet that launched the token. */
   deployer: Address;
+  /** The launch factory that created the token. */
+  factory: Address;
   /** As emitted at launch: usually a data: URI holding JSON with a description and image. */
   metadataUri: string | null;
   launchTxHash: TxHash;
