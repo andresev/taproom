@@ -48,3 +48,8 @@ users can never enter or edit its numbers.
 - 2026-10-02: 0011 requires a public link, with a QR code on the card, that
   re-renders the receipt from indexed data, because a shared image can be edited.
   It also asks for the list of a user's own receipts. Neither is built (MVP step 10).
+- 2026-10-02: the list of a user's own receipts is built: Profile → "Your receipts"
+  (`app/src/app/receipts.tsx`). It lists the signed-in wallet's newest 100 indexed
+  buys, each opening its receipt, under the same coverage note as trader records
+  (0013), since only buys in the indexed history can have a receipt. The public
+  link and QR code are still not built.

@@ -60,7 +60,7 @@ These are the steps that serve the positioning. `docs/0011` has the reasoning.
 
 8. **Indexer history and coverage** — backfill from the standard factory's deployment block, and index the multi-pair factories. Partly built (`docs/0012`): the deployment blocks are confirmed, multi-pair v1 and v2 are indexed, and `GET /coverage` says which factories are indexed and from which block. The backfill has not been run: it needs an RPC that serves old logs, and a fix for how Ponder requests logs once a factory has 1,000 child contracts. The dividend factory waits on its open question. Steps 9 to 11 are only as good as this.
 9. **Trader records** — on the wallet screen, a wallet's entries, exits and results on Brew tokens, computed from the indexer (see Trader records). First version built (`docs/0013`); it states a partial period until step 8's backfill runs.
-10. **Checkable receipts** — a public link, and a QR code on the card, that re-renders the receipt from indexed data; and a list of the user's own receipts (see Receipts).
+10. **Checkable receipts** — a public link, and a QR code on the card, that re-renders the receipt from indexed data; and a list of the user's own receipts (see Receipts). The list is built (Profile → Your receipts, `docs/0010`); the link and QR code wait on where the page is hosted.
 11. **Brew-specific safety inputs** — deployer record, launch-time holders, pair-asset risk and origin (see Safety model).
 
 ### Before the first release build

@@ -1,3 +1,4 @@
+import { Link } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, TextInput } from 'react-native';
 
@@ -80,6 +81,10 @@ export function ProfileCard({ userId }: { userId: string }) {
           disabled={unchanged || problem !== null}
         />
       </ThemedView>
+
+      <Link href="/receipts">
+        <ThemedText type="linkPrimary">Your receipts</ThemedText>
+      </Link>
 
       <Button label="Sign out" onPress={() => signOut.mutate()} loading={signOut.isPending} />
       {signOut.isError ? (

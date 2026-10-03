@@ -33,6 +33,7 @@ function Screens() {
         <Stack.Screen name="token/[address]" options={{ title: 'Token', headerBackTitle: 'Back' }} />
         <Stack.Screen name="wallet/[address]" options={{ title: 'Wallet', headerBackTitle: 'Back' }} />
         <Stack.Screen name="receipt/[id]" options={{ title: 'Receipt', headerBackTitle: 'Back' }} />
+        <Stack.Screen name="receipts" options={{ title: 'Your receipts', headerBackTitle: 'Back' }} />
       </Stack.Protected>
     </Stack>
   );
