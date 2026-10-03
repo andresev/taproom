@@ -1,10 +1,12 @@
 import { Link } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { Icon } from '@/components/icon';
 import { ThemedText } from '@/components/themed-text';
+import { TokenAvatar } from '@/components/token-avatar';
 import { useTheme } from '@/hooks/use-theme';
-import { formatTokenAmount, shortAddress } from '@/lib/chain/format';
-import { Spacing } from '@/theme';
+import { formatTokenAmount, pairAssetLabel, shortAddress } from '@/lib/chain/format';
+import { MinTouch, Spacing } from '@/theme';
 
 import type { Holding } from './portfolio';
 
@@ -12,23 +14,27 @@ import type { Holding } from './portfolio';
 export function HoldingRow({ holding }: { holding: Holding }) {
   const theme = useTheme();
   const symbol = holding.symbol ?? shortAddress(holding.token);
-  const pair = holding.value?.pairSymbol ?? (holding.value ? shortAddress(holding.value.pairToken) : '');
 
   return (
     <Link href={{ pathname: '/token/[address]', params: { address: holding.token } }} asChild>
-      <Pressable accessibilityRole="link" style={[styles.row, { backgroundColor: theme.backgroundElement }]}>
-        <View style={styles.line}>
-          <ThemedText type="smallBold">{symbol}</ThemedText>
-          <ThemedText type="smallBold">
-            {holding.value ? `≈ ${formatTokenAmount(holding.value.amount, holding.value.pairDecimals, 6)} ${pair}` : 'Value unknown'}
+      <Pressable
+        accessibilityRole="link"
+        style={({ pressed }) => [styles.row, { borderTopColor: theme.border, backgroundColor: pressed ? theme.cardPressed : 'transparent' }]}>
+        <TokenAvatar address={holding.token} symbol={holding.symbol} size={36} />
+        <View style={styles.names}>
+          <ThemedText type="mono" numberOfLines={1}>
+            {symbol}
+          </ThemedText>
+          <ThemedText type="monoSmall" themeColor="textSecondary" numberOfLines={1}>
+            {holding.balance === null ? 'Balance unknown' : `${formatTokenAmount(holding.balance, holding.decimals, 0)} ${symbol}`}
           </ThemedText>
         </View>
-        <View style={styles.line}>
-          <ThemedText type="small" themeColor="textSecondary">
-            {holding.balance === null ? 'Balance unknown' : `${formatTokenAmount(holding.balance, holding.decimals)} ${symbol}`}
-          </ThemedText>
-          <ThemedText type="linkPrimary">Trade</ThemedText>
-        </View>
+        <ThemedText type="mono" themeColor={holding.value ? 'text' : 'textSecondary'}>
+          {holding.value
+            ? `≈ ${formatTokenAmount(holding.value.amount, holding.value.pairDecimals)} ${pairAssetLabel(holding.value.pairSymbol, shortAddress(holding.value.pairToken))}`
+            : 'Value unknown'}
+        </ThemedText>
+        <Icon name="chevron" color={theme.textSecondary} size={16} />
       </Pressable>
     </Link>
   );
@@ -36,14 +42,16 @@ export function HoldingRow({ holding }: { holding: Holding }) {
 
 const styles = StyleSheet.create({
   row: {
-    gap: Spacing.one,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.three,
-  },
-  line: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: Spacing.two,
+    alignItems: 'center',
+    gap: Spacing.twoHalf,
+    minHeight: MinTouch,
+    paddingHorizontal: Spacing.three - 2,
+    paddingVertical: Spacing.twoHalf,
+    borderTopWidth: 1,
+  },
+  names: {
+    flex: 1,
+    minWidth: 0,
   },
 });

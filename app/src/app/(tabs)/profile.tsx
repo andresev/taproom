@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { LoadingState } from '@/components/screen-states';
@@ -16,29 +16,27 @@ export default function ProfileScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.container}>
-        {session ? (
-          <ProfileCard userId={session.user.id} />
-        ) : skipSignIn ? (
-          <View style={styles.devSignIn}>
-            <ThemedText type="smallBold" style={styles.center}>
-              Sign-in is switched off for development
-            </ThemedText>
-            <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
-              You are browsing without an account, so there is no wallet or profile and you cannot follow anyone.
-              EXPO_PUBLIC_SKIP_SIGN_IN in app/.env controls this.
-            </ThemedText>
-            <SignInOptions />
-          </View>
-        ) : (
-          <LoadingState />
-        )}
-        <ThemedView style={styles.about}>
-          <ThemedText type="smallBold">About</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
-            Taproom is an independent, community-built app. Not affiliated with Brew.
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <ThemedText type="title">Profile</ThemedText>
+          {session ? (
+            <ProfileCard userId={session.user.id} />
+          ) : skipSignIn ? (
+            <View style={styles.devSignIn}>
+              <ThemedText type="bodyStrong">Sign-in is switched off for development</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                You are browsing without an account, so there is no wallet or profile and you cannot follow anyone.
+                EXPO_PUBLIC_SKIP_SIGN_IN in app/.env controls this.
+              </ThemedText>
+              <SignInOptions />
+            </View>
+          ) : (
+            <LoadingState />
+          )}
+          <ThemedText type="small" themeColor="textSecondary" style={styles.about}>
+            Taproom is independent and community-built. Not affiliated with Brew.
           </ThemedText>
-        </ThemedView>
+        </ScrollView>
       </SafeAreaView>
     </ThemedView>
   );
@@ -48,18 +46,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  content: {
+    gap: Spacing.twoHalf,
+    padding: Spacing.three,
+    paddingBottom: Spacing.six,
+  },
   devSignIn: {
-    flex: 1,
-    justifyContent: 'center',
     gap: Spacing.three,
-    padding: Spacing.four,
   },
   about: {
-    alignItems: 'center',
-    gap: Spacing.one,
-    padding: Spacing.four,
-  },
-  center: {
     textAlign: 'center',
+    paddingTop: Spacing.two,
   },
 });

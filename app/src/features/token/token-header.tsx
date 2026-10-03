@@ -1,87 +1,58 @@
-import { Link } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
+import { Tag } from '@/components/chip';
 import { ExternalLink } from '@/components/external-link';
 import { ThemedText } from '@/components/themed-text';
-import { bscscanTokenUrl, bscscanTxUrl } from '@/lib/chain/explorer';
-import { formatPoolFee, formatTimeAgo, formatTokenAmount, shortAddress } from '@/lib/chain/format';
+import { TokenAvatar } from '@/components/token-avatar';
+import { bscscanTokenUrl } from '@/lib/chain/explorer';
+import { pairAssetLabel, shortAddress } from '@/lib/chain/format';
 import { Spacing } from '@/theme';
 
 import type { TokenDetails } from './types';
 
-function Fact({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <View style={styles.fact}>
-      <ThemedText type="small" themeColor="textSecondary">
-        {label}
-      </ThemedText>
-      <View style={styles.factValue}>{children}</View>
-    </View>
-  );
-}
-
-/** Who the token is: name, contract, launcher, supply and what it was brewed with. */
+/** Who the token is: its picture, name, ticker and contract, and what it is brewed with. */
 export function TokenHeader({ token }: { token: TokenDetails }) {
   const symbol = token.symbol ?? shortAddress(token.address);
+  const pairs = [...new Set(token.pools.map((pool) => pairAssetLabel(pool.pairSymbol, shortAddress(pool.pairToken))))];
 
   return (
     <View style={styles.container}>
-      <View style={styles.title}>
-        <ThemedText type="subtitle">{symbol}</ThemedText>
-        {token.name && token.name !== token.symbol ? (
-          <ThemedText type="default" themeColor="textSecondary">
-            {token.name}
-          </ThemedText>
-        ) : null}
-      </View>
-
-      <Fact label="Contract">
-        <ExternalLink href={bscscanTokenUrl(token.address)}>
-          <ThemedText type="code">{shortAddress(token.address, 6)}</ThemedText>
-        </ExternalLink>
-      </Fact>
-      <Fact label="Launched by">
-        <Link href={{ pathname: '/wallet/[address]', params: { address: token.deployer } }}>
-          <ThemedText type="code">{shortAddress(token.deployer, 6)}</ThemedText>
-        </Link>
-      </Fact>
-      <Fact label="Launched">
-        <ExternalLink href={bscscanTxUrl(token.launchTxHash)}>
-          <ThemedText type="small">{formatTimeAgo(token.launchedAt)} ago</ThemedText>
-        </ExternalLink>
-      </Fact>
-      <Fact label="Total supply">
-        <ThemedText type="small">
-          {formatTokenAmount(token.totalSupply, token.decimals, 0)} {symbol}
+      <TokenAvatar address={token.address} symbol={token.symbol} size={44} />
+      <View style={styles.names}>
+        <ThemedText type="subhead" numberOfLines={1}>
+          {token.name ?? symbol}
         </ThemedText>
-      </Fact>
-      {token.pools.map((pool) => (
-        <Fact key={pool.address} label="Brewed with">
-          <ThemedText type="small">
-            {pool.pairSymbol ?? shortAddress(pool.pairToken)} · {formatPoolFee(pool.fee)} pool fee
+        <ExternalLink href={bscscanTokenUrl(token.address)}>
+          <ThemedText type="monoSmall" themeColor="textSecondary">
+            {symbol} · {shortAddress(token.address)}
           </ThemedText>
-        </Fact>
-      ))}
+        </ExternalLink>
+      </View>
+      <View style={styles.pairs}>
+        {pairs.map((pair) => (
+          <Tag key={pair} label={pair} />
+        ))}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    gap: Spacing.two,
-  },
-  title: {
-    gap: Spacing.half,
-    paddingBottom: Spacing.one,
-  },
-  fact: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: Spacing.three,
+    gap: Spacing.twoHalf,
   },
-  factValue: {
-    flexShrink: 1,
-    alignItems: 'flex-end',
+  names: {
+    flex: 1,
+    minWidth: 0,
+    gap: Spacing.half,
+  },
+  pairs: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+    gap: Spacing.one,
+    maxWidth: 120,
   },
 });

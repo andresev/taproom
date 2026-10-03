@@ -1,11 +1,11 @@
-import { SafetyBadge } from '@/features/safety/safety-badge';
+import { SafetyCard } from '@/features/safety/safety-card';
 import { useSafety } from '@/features/safety/use-safety';
 
 import type { TokenDetails } from './types';
 
-/** The token page's safety badge: the score and every reason behind it. */
+/** The token page's safety card: the rating, its worst finding, and every reason one tap away. */
 export function TokenSafety({ token }: { token: TokenDetails }) {
   const { score } = useSafety(token.address);
 
-  return <SafetyBadge score={score} />;
+  return <SafetyCard score={score} />;
 }

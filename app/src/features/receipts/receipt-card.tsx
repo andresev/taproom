@@ -1,24 +1,26 @@
 import { StyleSheet, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
-import { bscscanTxUrl } from '@/lib/chain/explorer';
+import { useTheme } from '@/hooks/use-theme';
 import {
   formatMultiple,
   formatTokenAmount,
   formatUtcDateTime,
+  pairAssetLabel,
   shortAddress,
 } from '@/lib/chain/format';
-import { Spacing } from '@/theme';
+import { Fonts, Spacing } from '@/theme';
 
 import type { Receipt } from './receipt';
 import { receiptPageUrl } from './receipt-link';
 
-// The card is shared as an image, so it uses its own fixed colours instead of
-// the device theme: the same receipt looks the same from any phone.
-const INK = '#F5F5F0';
-const MUTED = '#A6A69C';
-const PAPER = '#16161A';
-const RULE = '#2E2E36';
+// The card is shared as an image, so it has its own fixed colours rather than
+// the device theme: a paper slip that looks the same from any phone.
+const PAPER = '#F1ECDD';
+const INK = '#22231D';
+const MUTED = '#5E6054';
+/** How many punched holes run along the slip's top and bottom edges. */
+const HOLES = 17;
 
 function Line({ label, value }: { label: string; value: string }) {
   return (
@@ -29,146 +31,197 @@ function Line({ label, value }: { label: string; value: string }) {
   );
 }
 
+/** A row of holes half over the slip's edge, in the colour of the screen behind it. */
+function Perforation({ edge, color }: { edge: 'top' | 'bottom'; color: string }) {
+  return (
+    <View style={[styles.perforation, edge === 'top' ? styles.perforationTop : styles.perforationBottom]} pointerEvents="none">
+      {Array.from({ length: HOLES }, (_, index) => (
+        <View key={index} style={[styles.hole, { backgroundColor: color }]} />
+      ))}
+    </View>
+  );
+}
+
 /**
- * The shareable card. It only prints the receipt it is given; it has no inputs
- * and no state, so nothing on it can be edited. When a public receipt page is
- * configured, the card carries its address and a QR code for it, so anyone
- * holding the image can check it against the chain.
+ * The shareable receipt, drawn as a printed bar tab. It only prints the receipt
+ * it is given; it has no inputs and no state, so nothing on it can be edited.
+ * It states that the wallet bought the token at that time and price, and nothing
+ * about still holding it or making a profit. When a public receipt page is
+ * configured, the slip carries its address and a QR code for it.
  */
 export function ReceiptCard({ receipt }: { receipt: Receipt }) {
+  const theme = useTheme();
   const pageUrl = receiptPageUrl(receipt.id);
   const symbol = receipt.token.symbol ?? shortAddress(receipt.token.address);
-  const pair = receipt.pair.symbol ?? 'pair asset';
+  const pair = pairAssetLabel(receipt.pair.symbol);
   const cap = (value: bigint) => `${formatTokenAmount(value, receipt.pair.decimals, 2)} ${pair}`;
 
   return (
-    <View style={styles.card}>
-      <View style={styles.header}>
-        <Text style={styles.brand}>Taproom receipt</Text>
-        <Text style={styles.muted}>BNB Smart Chain</Text>
-      </View>
+    <View style={styles.slip}>
+      <Perforation edge="top" color={theme.background} />
+      <Perforation edge="bottom" color={theme.background} />
 
-      <View>
-        <Text style={styles.symbol}>{symbol}</Text>
+      <View style={styles.between}>
+        <Text style={styles.brand}>taproom</Text>
+        <Text style={styles.kind}>RECEIPT</Text>
+      </View>
+      <View style={styles.dash} />
+
+      <View style={styles.between}>
+        <Text style={styles.symbol} numberOfLines={1}>
+          {symbol}
+        </Text>
         {receipt.token.name && receipt.token.name !== receipt.token.symbol ? (
-          <Text style={styles.muted}>{receipt.token.name}</Text>
+          <Text style={styles.name} numberOfLines={1}>
+            {receipt.token.name}
+          </Text>
         ) : null}
       </View>
+      <Line label="WALLET" value={shortAddress(receipt.wallet, 6)} />
+      <Line label="BOUGHT" value={formatUtcDateTime(receipt.boughtAt)} />
+      <Line label="AMOUNT" value={`${formatTokenAmount(receipt.amountBought, receipt.token.decimals)} ${symbol}`} />
+      <Line label="PAID" value={`${formatTokenAmount(receipt.amountPaid, receipt.pair.decimals, 6)} ${pair}`} />
+      <View style={styles.dash} />
 
-      <View style={styles.multipleBlock}>
+      <Line label="MCAP AT ENTRY" value={cap(receipt.entryMarketCap)} />
+      <Line label="MCAP NOW" value={receipt.currentMarketCap === null ? 'Unknown' : cap(receipt.currentMarketCap)} />
+      <View style={styles.between}>
+        <Text style={styles.label}>NOW ÷ ENTRY</Text>
         <Text style={styles.multiple}>{receipt.multiple === null ? '—' : formatMultiple(receipt.multiple)}</Text>
-        <Text style={styles.muted}>market cap now ÷ market cap at entry</Text>
       </View>
+      <View style={styles.dash} />
 
-      <View style={styles.rule} />
-      <Line
-        label="Bought"
-        value={`${formatTokenAmount(receipt.amountBought, receipt.token.decimals)} ${symbol}`}
-      />
-      <Line label="Paid" value={`${formatTokenAmount(receipt.amountPaid, receipt.pair.decimals, 6)} ${pair}`} />
-      <Line label="When" value={formatUtcDateTime(receipt.boughtAt)} />
-      <Line label="Wallet" value={shortAddress(receipt.wallet, 6)} />
-      <View style={styles.rule} />
-      <Line label="Market cap at entry" value={cap(receipt.entryMarketCap)} />
-      <Line
-        label="Market cap now"
-        value={receipt.currentMarketCap === null ? 'Unknown' : cap(receipt.currentMarketCap)}
-      />
-      <View style={styles.rule} />
-
+      <Line label="TX" value={shortAddress(receipt.txHash, 8)} />
       {pageUrl ? (
         <View style={styles.verify}>
           {/* Dark on light with a quiet zone: what every QR scanner reads. */}
-          <View style={styles.qr}>
-            <QRCode value={pageUrl} size={84} color="#000000" backgroundColor="#FFFFFF" quietZone={6} ecl="M" />
-          </View>
+          <QRCode value={pageUrl} size={88} color={INK} backgroundColor={PAPER} quietZone={2} ecl="M" />
           <View style={styles.verifyText}>
-            <Text style={styles.label}>Check this receipt</Text>
-            <Text style={styles.small}>{pageUrl}</Text>
+            <Text style={styles.check}>Check this receipt</Text>
+            <Text style={styles.link}>{pageUrl.replace(/^https?:\/\//, '')}</Text>
           </View>
         </View>
       ) : null}
+      <View style={styles.dash} />
 
-      <Text style={styles.small}>Transaction {shortAddress(receipt.txHash, 10)}</Text>
-      <Text style={styles.small}>{bscscanTxUrl(receipt.txHash)}</Text>
-      <Text style={styles.small}>
-        Generated from on-chain data. Token {shortAddress(receipt.token.address, 6)}. Not affiliated with Brew.
+      <Text style={styles.footer}>
+        Shows that this wallet bought this token at this time and price. Built from chain data. Not affiliated with
+        Brew.
       </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    width: 340,
+  slip: {
+    width: 320,
     gap: Spacing.two,
-    padding: Spacing.four,
-    borderRadius: Spacing.four,
+    paddingHorizontal: Spacing.threeHalf,
+    paddingVertical: Spacing.four + 2,
     backgroundColor: PAPER,
   },
-  header: {
+  perforation: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    paddingHorizontal: Spacing.two,
+  },
+  perforationTop: {
+    top: -6,
+  },
+  perforationBottom: {
+    bottom: -6,
+  },
+  hole: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  between: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: Spacing.twoHalf,
   },
   brand: {
     color: INK,
-    fontSize: 14,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
+    fontSize: 17,
+    letterSpacing: -0.5,
   },
-  muted: {
+  kind: {
     color: MUTED,
-    fontSize: 13,
+    fontFamily: Fonts.mono,
+    fontSize: 11,
+    letterSpacing: 1.4,
+  },
+  dash: {
+    borderTopWidth: 1,
+    borderTopColor: MUTED,
+    borderStyle: 'dashed',
+    marginVertical: Spacing.half,
   },
   symbol: {
+    flexShrink: 1,
     color: INK,
-    fontSize: 34,
-    fontWeight: '700',
+    fontFamily: Fonts.monoSemibold,
+    fontSize: 26,
   },
-  multipleBlock: {
-    paddingVertical: Spacing.two,
-  },
-  multiple: {
-    color: INK,
-    fontSize: 56,
-    fontWeight: '700',
-    lineHeight: 60,
-  },
-  rule: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: RULE,
+  name: {
+    flexShrink: 1,
+    color: MUTED,
+    fontFamily: Fonts.mono,
+    fontSize: 12,
   },
   line: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: Spacing.three,
+    gap: Spacing.twoHalf,
   },
   label: {
     color: MUTED,
-    fontSize: 14,
+    fontFamily: Fonts.mono,
+    fontSize: 12,
   },
   value: {
-    color: INK,
-    fontSize: 14,
-    fontWeight: '600',
     flexShrink: 1,
+    color: INK,
+    fontFamily: Fonts.monoMedium,
+    fontSize: 12.5,
     textAlign: 'right',
   },
-  small: {
-    color: MUTED,
-    fontSize: 11,
+  multiple: {
+    color: INK,
+    fontFamily: Fonts.monoSemibold,
+    fontSize: 40,
+    lineHeight: 44,
   },
   verify: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.three,
-    paddingVertical: Spacing.one,
-  },
-  qr: {
-    borderRadius: Spacing.two,
-    overflow: 'hidden',
+    gap: Spacing.twoHalf,
+    paddingTop: Spacing.one,
   },
   verifyText: {
     flex: 1,
     gap: Spacing.one,
+  },
+  check: {
+    color: INK,
+    fontFamily: Fonts.bold,
+    fontSize: 13,
+  },
+  link: {
+    color: INK,
+    fontFamily: Fonts.mono,
+    fontSize: 10.5,
+  },
+  footer: {
+    color: MUTED,
+    fontFamily: Fonts.mono,
+    fontSize: 10.5,
+    lineHeight: 15,
   },
 });

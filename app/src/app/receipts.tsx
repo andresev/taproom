@@ -46,13 +46,13 @@ export default function MyReceiptsScreen() {
           </View>
         }
         ListEmptyComponent={
-          <ThemedText type="small" themeColor="textSecondary">
+          <ThemedText type="small" themeColor="textSecondary" style={styles.note}>
             No buys from your wallet in the indexed history.
           </ThemedText>
         }
         ListFooterComponent={
           more ? (
-            <ThemedText type="small" themeColor="textSecondary">
+            <ThemedText type="small" themeColor="textSecondary" style={styles.note}>
               Showing your newest {RECEIPT_LIST_LIMIT} buys.
             </ThemedText>
           ) : null
@@ -74,12 +74,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   list: {
-    gap: Spacing.two,
-    padding: Spacing.three,
     paddingBottom: Spacing.six,
   },
   header: {
     gap: Spacing.two,
-    paddingBottom: Spacing.one,
+    padding: Spacing.three,
+  },
+  note: {
+    paddingHorizontal: Spacing.three,
+    paddingTop: Spacing.twoHalf,
   },
 });

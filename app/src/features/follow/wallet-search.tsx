@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { FlatList, StyleSheet, TextInput, View } from 'react-native';
 
+import { Icon } from '@/components/icon';
 import { EmptyState, ErrorState, LoadingState } from '@/components/screen-states';
 import { ThemedText } from '@/components/themed-text';
 import { useSession } from '@/features/profile/use-session';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useTheme } from '@/hooks/use-theme';
-import { Spacing } from '@/theme';
+import { Fonts, Radius, Spacing } from '@/theme';
 
 import { MIN_NAME_QUERY, parseSearchInput } from './search-input';
 import type { WalletSummary } from './types';
@@ -17,12 +18,17 @@ import { WalletRow } from './wallet-row';
 const SEARCH_DEBOUNCE_MS = 300;
 
 function WalletList({ title, wallets }: { title: string; wallets: WalletSummary[] }) {
+  const theme = useTheme();
   return (
     <FlatList
       data={wallets}
       keyExtractor={(wallet) => wallet.address}
       renderItem={({ item }) => <WalletRow wallet={item} />}
-      ListHeaderComponent={<ThemedText type="smallBold">{title}</ThemedText>}
+      ListHeaderComponent={
+        <ThemedText type="small" themeColor="textSecondary" style={[styles.listTitle, { borderBottomColor: theme.border }]}>
+          {title}
+        </ThemedText>
+      }
       contentContainerStyle={styles.list}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
@@ -60,7 +66,12 @@ export function WalletSearch() {
 
   return (
     <View style={styles.container}>
-      <TextInput
+      <ThemedText type="title" style={styles.title}>
+        Discover
+      </ThemedText>
+      <View style={[styles.search, { backgroundColor: theme.card, borderColor: text ? theme.accentText : theme.border }]}>
+        <Icon name="search" color={theme.textSecondary} />
+        <TextInput
         value={text}
         onChangeText={setText}
         placeholder="Wallet address or profile name"
@@ -69,9 +80,10 @@ export function WalletSearch() {
         autoCorrect={false}
         clearButtonMode="while-editing"
         returnKeyType="search"
-        accessibilityLabel="Search wallets"
-        style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
-      />
+          accessibilityLabel="Search by wallet address or profile name"
+          style={[styles.input, { color: theme.text }]}
+        />
+      </View>
       {input.kind === 'empty' ? (
         <Following />
       ) : input.kind === 'too-short' ? (
@@ -95,18 +107,35 @@ export function WalletSearch() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    gap: Spacing.three,
-    paddingHorizontal: Spacing.three,
     paddingTop: Spacing.three,
   },
-  input: {
-    minHeight: 44,
+  title: {
     paddingHorizontal: Spacing.three,
-    borderRadius: Spacing.three,
+    paddingBottom: Spacing.twoHalf,
+  },
+  search: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two + 2,
+    minHeight: 48,
+    marginHorizontal: Spacing.three,
+    marginBottom: Spacing.two,
+    paddingHorizontal: Spacing.twoHalf + 2,
+    borderRadius: Radius.control,
+    borderWidth: 1,
+  },
+  input: {
+    flex: 1,
+    minHeight: 46,
+    fontFamily: Fonts.regular,
     fontSize: 16,
   },
+  listTitle: {
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    borderBottomWidth: 1,
+  },
   list: {
-    gap: Spacing.two,
     paddingBottom: Spacing.six,
   },
 });

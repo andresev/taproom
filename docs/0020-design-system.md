@@ -1,8 +1,7 @@
 # 0020: Design system and the "On tap" feed
 
 Date: 2026-10-03. Status: accepted; the owner chose this design from two mockup
-sets. Foundations, sign-in and the feed are built; other screens still use the
-earlier layouts in the new colours and type.
+sets. Built across the app; see "Since then".
 
 ## Context
 
@@ -68,8 +67,36 @@ written brief and a set of mockups (49 artboards, dark and light).
 - **Feed rows each fetch a safety score.** A score needs a bytecode read and a sell
   simulation. Rows fetch once and keep it for five minutes, where the token page
   refreshes every minute. On a paid RPC this is a real cost.
-- **Not every screen is redesigned yet:** token page, buy and sell sheet, wallet,
-  Portfolio, Profile, Discover and the receipt card still have their earlier
-  layouts.
-- **The app icon and splash screen are still the Expo defaults.**
 - **Seen in mockups and a bundle build, not yet reviewed on the phone.**
+
+## Since then
+
+- 2026-10-03: the remaining screens are rebuilt to the design.
+  - **Token page:** a compact header with the token's artwork, a large price,
+    three stat tiles, the safety card, activity, launch facts and recent trades,
+    with Buy and Sell fixed at the bottom.
+  - **Safety card** (`features/safety/safety-card.tsx`): the rating, the worst
+    finding and a count of the rest; one tap lists every reason with its own
+    status. It replaces the earlier badge, on the token page and in the buy and
+    sell review.
+  - **Buy and sell are bottom sheets** (`components/bottom-sheet.tsx`,
+    `features/trade/buy-sheet.tsx`, `sell-sheet.tsx`): amount and slippage, the
+    review, then pending, done or failed. Slippage above 5% shows a heavy-bordered
+    warning with the least the user could receive. A finished buy offers
+    "View receipt": the buy now returns its receipt id, found from the pool's log
+    in the transaction.
+  - **Wallet:** a compact header with Follow, a record summary with gains and
+    losses in the same size, and positions as Entry, Exit and Result columns.
+  - **Portfolio:** holdings grouped into one card per pair asset.
+  - **Profile:** identity, wallet address, the newest receipts, settings and the
+    About line. "Export key" is listed as not available yet, since it is not built.
+  - **Discover:** a search field and tap-list rows, each with Follow.
+  - **Receipt:** a paper bar tab with punched edges, mono type and the QR code.
+    Its colours are fixed, so the shared image looks the same from any phone.
+  - **App icon and splash:** Taproom's mark on brass, drawn by
+    `app/scripts/render-icons.py`. The Expo template's icon file was removed.
+- The wallet address on Profile opens the system share sheet, which includes Copy.
+  A one-tap copy needs a clipboard module, which is a new dependency and has not
+  been approved.
+- Still true: none of it has been reviewed on the phone by the owner yet.
+

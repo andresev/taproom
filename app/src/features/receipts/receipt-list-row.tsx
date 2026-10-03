@@ -1,10 +1,12 @@
 import { Link } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { Icon } from '@/components/icon';
 import { ThemedText } from '@/components/themed-text';
+import { TokenAvatar } from '@/components/token-avatar';
 import { useTheme } from '@/hooks/use-theme';
-import { formatTokenAmount, formatUtcDateTime, shortAddress } from '@/lib/chain/format';
-import { Spacing } from '@/theme';
+import { formatTokenAmount, formatUtcDateTime, pairAssetLabel, shortAddress } from '@/lib/chain/format';
+import { MinTouch, Spacing } from '@/theme';
 
 import type { ReceiptListItem } from './receipt-list';
 
@@ -12,23 +14,24 @@ import type { ReceiptListItem } from './receipt-list';
 export function ReceiptListRow({ item }: { item: ReceiptListItem }) {
   const theme = useTheme();
   const symbol = item.tokenSymbol ?? shortAddress(item.token);
-  const pair = item.pairSymbol ? ` ${item.pairSymbol}` : '';
 
   return (
     <Link href={{ pathname: '/receipt/[id]', params: { id: item.id } }} asChild>
-      <Pressable accessibilityRole="link" style={[styles.row, { backgroundColor: theme.backgroundElement }]}>
-        <View style={styles.line}>
-          <ThemedText type="smallBold">{symbol}</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
+      <Pressable
+        accessibilityRole="link"
+        style={({ pressed }) => [styles.row, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.card : 'transparent' }]}>
+        <TokenAvatar address={item.token} symbol={item.tokenSymbol} size={36} />
+        <View style={styles.text}>
+          <ThemedText type="mono">{symbol}</ThemedText>
+          <ThemedText type="monoSmall" themeColor="textSecondary" numberOfLines={1}>
+            {formatTokenAmount(item.amountBought, item.tokenDecimals, 0)} for{' '}
+            {formatTokenAmount(item.amountPaid, item.pairDecimals)} {pairAssetLabel(item.pairSymbol, '')}
+          </ThemedText>
+          <ThemedText type="monoSmall" themeColor="textSecondary">
             {formatUtcDateTime(item.boughtAt)}
           </ThemedText>
         </View>
-        <ThemedText type="small">
-          Bought {formatTokenAmount(item.amountBought, item.tokenDecimals)} {symbol} for{' '}
-          {formatTokenAmount(item.amountPaid, item.pairDecimals)}
-          {pair}
-        </ThemedText>
-        <ThemedText type="linkPrimary">Receipt</ThemedText>
+        <Icon name="chevron" color={theme.textSecondary} size={16} />
       </Pressable>
     </Link>
   );
@@ -36,14 +39,16 @@ export function ReceiptListRow({ item }: { item: ReceiptListItem }) {
 
 const styles = StyleSheet.create({
   row: {
-    gap: Spacing.one,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.three,
-  },
-  line: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: Spacing.two,
+    alignItems: 'center',
+    gap: Spacing.twoHalf,
+    minHeight: MinTouch,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.twoHalf,
+    borderBottomWidth: 1,
+  },
+  text: {
+    flex: 1,
+    minWidth: 0,
   },
 });

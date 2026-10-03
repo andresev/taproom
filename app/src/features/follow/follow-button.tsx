@@ -10,8 +10,9 @@ import { Spacing } from '@/theme';
 import { useIsFollowing, useSetFollowing } from './use-follows';
 
 /**
- * Follow / Unfollow for one wallet. Signed out, it leads to the Profile tab.
- * Renders nothing on the signed-in user's own wallet.
+ * Follow or stop following one wallet: brass "Follow", then a quiet "Following"
+ * that unfollows when tapped. Signed out, it leads to the Profile tab. Renders
+ * nothing on the signed-in user's own wallet.
  */
 export function FollowButton({ address }: { address: Address }) {
   const router = useRouter();
@@ -39,7 +40,8 @@ export function FollowButton({ address }: { address: Address }) {
   return (
     <View style={styles.container}>
       <Button
-        label={following ? 'Unfollow' : 'Follow'}
+        label={following ? 'Following' : 'Follow'}
+        kind={following ? 'secondary' : 'primary'}
         onPress={() => setFollowing.mutate(!following)}
         loading={isFollowing.isPending}
         disabled={setFollowing.isPending}
@@ -55,7 +57,7 @@ export function FollowButton({ address }: { address: Address }) {
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
+    alignItems: 'flex-end',
     gap: Spacing.two,
   },
 });

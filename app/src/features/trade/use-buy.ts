@@ -26,8 +26,16 @@ export function useBnbBalance(address: Address | null) {
   });
 }
 
+export interface BuyResult {
+  hash: TxHash;
+  /** The indexer's id for this buy (`<transaction hash>-<log index>`), which is its receipt's address. Null if the swap log was not found. */
+  tradeId: string | null;
+}
+
 export interface BuyRequest {
   token: Address;
+  /** The pool the buy goes through, to find the swap in the transaction's logs. */
+  pool: Address;
   fee: number;
   /** Wei of BNB to spend. */
   amountIn: bigint;
@@ -48,7 +56,7 @@ export function useBuy() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ token, fee, amountIn, amountOutMinimum }: BuyRequest): Promise<TxHash> => {
+    mutationFn: async ({ token, pool, fee, amountIn, amountOutMinimum }: BuyRequest): Promise<BuyResult> => {
       const { account, client } = await embeddedWalletClient(wallets, 'buy');
 
       const params = buildBuyParams({
@@ -72,9 +80,11 @@ export function useBuy() {
       const hash = await client.writeContract(request);
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
       if (receipt.status !== 'success') throw new Error('The swap reverted. Your BNB was not exchanged.');
-      return hash;
+      // The pool's Swap log is the trade the indexer records, so its position names the receipt.
+      const swap = receipt.logs.find((log) => log.address.toLowerCase() === pool);
+      return { hash, tradeId: swap ? `${hash.toLowerCase()}-${swap.logIndex}` : null };
     },
-    onSuccess: (_hash, { token }) =>
+    onSuccess: (_result, { token }) =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: ['token', token] }),
         queryClient.invalidateQueries({ queryKey: ['bnb-balance'] }),

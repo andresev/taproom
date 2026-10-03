@@ -5,10 +5,7 @@ import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
 import { Radius, Spacing, Type } from '@/theme';
 
-import type { SafetyLevel } from './types';
-
-/** `unknown` is shown while a score is loading or could not be worked out. It is never styled as safe. */
-export type SafetyPillLevel = SafetyLevel | 'unknown';
+import type { SafetyPillLevel } from './safety-summary';
 
 const LABEL: Record<SafetyPillLevel, string> = { safe: 'Safe', caution: 'Caution', danger: 'Danger', unknown: 'Unknown' };
 

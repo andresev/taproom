@@ -7,6 +7,7 @@ import { Button } from '@/components/button';
 import { ExternalLink } from '@/components/external-link';
 import { ErrorState, LoadingState } from '@/components/screen-states';
 import { ThemedText } from '@/components/themed-text';
+import { useTheme } from '@/hooks/use-theme';
 import { bscscanTxUrl } from '@/lib/chain/explorer';
 import { Spacing } from '@/theme';
 
@@ -16,6 +17,7 @@ import { useReceipt } from './use-receipt';
 
 /** A receipt for one trade, with a button that shares the card as an image. */
 export function ReceiptView({ tradeId }: { tradeId: string }) {
+  const theme = useTheme();
   const result = useReceipt(tradeId);
   const card = useRef<View>(null);
   const [sharing, setSharing] = useState(false);
@@ -47,11 +49,14 @@ export function ReceiptView({ tradeId }: { tradeId: string }) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* collapsable={false} keeps this a real native view, which the capture needs on Android. */}
-      <View ref={card} collapsable={false}>
+      {/* collapsable={false} keeps this a real native view, which the capture needs on Android.
+          The padding keeps the slip's punched edges inside the shared image. */}
+      <View ref={card} collapsable={false} style={[styles.capture, { backgroundColor: theme.background }]}>
         <ReceiptCard receipt={receipt} />
       </View>
-      <Button label="Share receipt" onPress={() => void share()} loading={sharing} />
+      <View style={styles.action}>
+        <Button label="Share receipt" kind="primary" icon="share" size="large" onPress={() => void share()} loading={sharing} />
+      </View>
       {failure ? (
         <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
           {failure}
@@ -59,14 +64,14 @@ export function ReceiptView({ tradeId }: { tradeId: string }) {
       ) : null}
       {pageUrl ? (
         <ExternalLink href={pageUrl}>
-          <ThemedText type="linkPrimary">Open the public receipt page</ThemedText>
+          <ThemedText type="label" style={{ color: theme.accentText }}>Open the public receipt page</ThemedText>
         </ExternalLink>
       ) : null}
       <ExternalLink href={bscscanTxUrl(receipt.txHash)}>
-        <ThemedText type="linkPrimary">View the transaction on BscScan</ThemedText>
+        <ThemedText type="label" style={{ color: theme.accentText }}>View the transaction on BscScan</ThemedText>
       </ExternalLink>
       <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
-        Every number on this card comes from the transaction and the pool. None of it can be edited.
+        Every number on this receipt comes from the transaction and the pool. None of it can be edited.
       </ThemedText>
     </ScrollView>
   );
@@ -81,5 +86,12 @@ const styles = StyleSheet.create({
   },
   center: {
     textAlign: 'center',
+  },
+  capture: {
+    paddingVertical: Spacing.twoHalf,
+    paddingHorizontal: Spacing.two,
+  },
+  action: {
+    alignSelf: 'stretch',
   },
 });

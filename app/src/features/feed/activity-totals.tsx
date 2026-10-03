@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { ActivityBar } from '@/components/activity-bar';
 import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
-import { formatTokenAmount } from '@/lib/chain/format';
+import { formatTokenAmount, pairAssetLabel } from '@/lib/chain/format';
 import { Spacing } from '@/theme';
 
 import type { TokenActivity } from './types';
@@ -18,7 +18,7 @@ const plural = (count: number, word: string) => `${count} ${word}${count === 1 ?
 export function ActivityTotals({ activity }: { activity: Pick<TokenActivity, 'buys' | 'sells' | 'buyShare' | 'volume'> }) {
   const theme = useTheme();
   const { volume, buyShare } = activity;
-  const pair = volume?.pairSymbol ? ` ${volume.pairSymbol}` : '';
+  const pair = volume?.pairSymbol ? ` ${pairAssetLabel(volume.pairSymbol)}` : '';
 
   if (buyShare === null) {
     return (

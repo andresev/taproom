@@ -7,7 +7,7 @@ import { ActivityTotals } from '@/features/feed/activity-totals';
 import { FEED_WINDOWS, WINDOW_SECONDS } from '@/features/feed/feed-filters';
 import { useFeedFiltersStore } from '@/features/feed/feed-filters-store';
 import { useTheme } from '@/hooks/use-theme';
-import { Spacing } from '@/theme';
+import { Radius, Spacing } from '@/theme';
 
 import { useTokenActivity } from './use-token';
 
@@ -22,8 +22,8 @@ export function TokenActivity({ address }: { address: Address }) {
   const activity = useTokenActivity(address, WINDOW_SECONDS[window]);
 
   return (
-    <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
-      <ThemedText type="smallBold">Activity · last {window}</ThemedText>
+    <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+      <ThemedText type="bodyStrong">Activity · last {window}</ThemedText>
       <View style={styles.options}>
         {FEED_WINDOWS.map((option) => (
           <Chip
@@ -62,8 +62,9 @@ export function TokenActivity({ address }: { address: Address }) {
 const styles = StyleSheet.create({
   card: {
     gap: Spacing.two,
-    padding: Spacing.three,
-    borderRadius: Spacing.three,
+    padding: Spacing.three - 2,
+    borderRadius: Radius.card,
+    borderWidth: 1,
   },
   options: {
     flexDirection: 'row',
