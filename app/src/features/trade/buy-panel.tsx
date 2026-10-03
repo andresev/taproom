@@ -7,8 +7,6 @@ import { Chip } from '@/components/chip';
 import { ExternalLink } from '@/components/external-link';
 import { ThemedText } from '@/components/themed-text';
 import { SafetyBadge } from '@/features/safety/safety-badge';
-import { useSafety } from '@/features/safety/use-safety';
-import { BURN_ADDRESS, topTenShare } from '@/features/token/holders';
 import type { TokenDetails } from '@/features/token/types';
 import { useTokenMarket } from '@/features/token/use-token-market';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
@@ -18,28 +16,17 @@ import { formatPrice, formatTokenAmount, shortAddress } from '@/lib/chain/format
 import { Spacing } from '@/theme';
 
 import { minimumReceived, parseBnbAmount, priceImpactBps } from './buy';
+import { ReviewRow as Row } from './review-row';
 import { SLIPPAGE_OPTIONS_BPS, formatSlippage, isHighSlippage } from './slippage';
 import { useSlippageStore } from './slippage-store';
 import { useBnbBalance, useBuy, useWalletAddress } from './use-buy';
 import { useBuyQuote } from './use-buy-quote';
+import { useTradeSafety } from './use-trade-safety';
 
 const QUICK_AMOUNTS = ['0.01', '0.05', '0.1'];
 const BNB_DECIMALS = 18;
 /** Price impact, pool fee included, above which the panel says so in plain words. */
 const HIGH_IMPACT_BPS = 500;
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.row}>
-      <ThemedText type="small" themeColor="textSecondary">
-        {label}
-      </ThemedText>
-      <ThemedText type="small" style={styles.rowValue}>
-        {value}
-      </ThemedText>
-    </View>
-  );
-}
 
 /**
  * Buy a token with BNB. Two steps: set the amount and slippage, then a review
@@ -63,15 +50,7 @@ export function BuyPanel({ token }: { token: TokenDetails }) {
   const quote = useBuyQuote({ token: token.address, fee: pool?.fee ?? 0, amountIn: pool ? amountIn : null });
   const buy = useBuy();
 
-  const holderShare =
-    token.holderCount === null
-      ? null
-      : topTenShare(
-          token.largestHolders,
-          [...token.pools.map((item) => item.address), BURN_ADDRESS],
-          market.data?.totalSupply ?? token.totalSupply,
-        );
-  const safety = useSafety(token.address, holderShare);
+  const safety = useTradeSafety(token);
 
   if (!pool || pool.pairToken !== ADDRESSES.wbnb) {
     return (
@@ -262,10 +241,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: Spacing.three,
-  },
-  rowValue: {
-    flexShrink: 1,
-    textAlign: 'right',
   },
   options: {
     flexDirection: 'row',

@@ -54,3 +54,5 @@ slippage control and the safety status shown before the user confirms.
   real score, and Confirm stays disabled until it has loaded.
 - 2026-10-02: 0011 lists selling in the app, and Sentry, as requirements before the
   first release build. Neither is built.
+- 2026-10-02: selling is built (0017), through the same review. The buy now signs through
+  the shared `features/trade/embedded-wallet.ts`, with no change in behaviour.
