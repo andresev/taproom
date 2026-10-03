@@ -71,7 +71,7 @@ Requirements for a build that real users can fund. They are not where Taproom co
 - **Sell** — a user who bought in the app must be able to sell in the app, through the same review step as a buy. Built (`docs/0017`), BNB-paired tokens only like the buy; not yet run with a real wallet.
 - **Portfolio tab** — the user's own holdings. Built (`docs/0018`): indexed Brew tokens with live balances and values per pair asset.
 - **Error reporting** — Sentry is not installed (see Stack).
-- **App identity** — a real bundle identifier in place of the placeholder `com.anonymous.social-trading`. Apple sign-in does not work without one (`docs/0007`).
+- **App identity** — the bundle identifier is `com.andresvaldez.taproom` (iOS bundle ID and Android package, set 2026-10-02 in `app/app.json`). Still needed: an Apple Developer organization account with Sign in with Apple enabled for that ID, and the same ID in the Privy dashboard's allowed app identifiers (`docs/0007`).
 - **Store rules** — the checks under Open questions.
 
 ### Out of scope for v1 (v2+)

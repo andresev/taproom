@@ -58,6 +58,17 @@ free plan works) and the Ponder patches in `patches/`, which `npm install` appli
 it. `GET /coverage` on the indexer says which factories are indexed and from which
 block.
 
+## Running on an iPhone
+
+`docs/0019-device-builds.md` has the details. In short:
+
+1. In `app/.env`, set the Supabase, indexer and receipt-page URLs to your Mac's
+   local address (`ipconfig getifaddr en0`) instead of `localhost`, and set
+   `EXPO_PUBLIC_APPLE_SIGN_IN=false` if you sign with a free Apple ID.
+2. Start `npm run db:start`, `npx supabase functions serve --env-file
+   supabase/functions/.env` and `npm run dev:indexer`.
+3. Connect the phone, then `cd app && npx expo run:ios --device`.
+
 ## Everyday commands
 
 ```bash

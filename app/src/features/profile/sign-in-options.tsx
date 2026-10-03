@@ -5,6 +5,7 @@ import { ActivityIndicator, Platform, StyleSheet, View, useColorScheme } from 'r
 
 import { Button } from '@/components/button';
 import { ThemedText } from '@/components/themed-text';
+import { appleSignInEnabled } from '@/lib/api/privy';
 import { Spacing } from '@/theme';
 
 import { useAuthStore } from './auth-store';
@@ -64,7 +65,7 @@ export function SignInOptions() {
 
   return (
     <View style={styles.block}>
-      {Platform.OS === 'ios' ? (
+      {!appleSignInEnabled ? null : Platform.OS === 'ios' ? (
         <AppleAuthentication.AppleAuthenticationButton
           buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
           buttonStyle={

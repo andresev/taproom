@@ -92,3 +92,6 @@ that sign-off on 2026-10-02 and asked for CLAUDE.md to be changed to match.
 - 2026-10-02: buys are signed by the embedded wallet (0008).
 - 2026-10-02: key export is not built. 0011 lists it, with a real bundle identifier,
   as a requirement before the first release build.
+- 2026-10-02: the bundle identifier is `com.andresvaldez.taproom`. It must be listed in
+  the Privy app client's allowed identifiers, and Sign in with Apple enabled for it
+  under an Apple Developer team.

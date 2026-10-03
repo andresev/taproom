@@ -51,3 +51,6 @@ the user's own wallet.
 - 2026-10-02: the PancakeSwap router and quoter were confirmed in 0008.
 - 2026-10-02: the iOS bundle identifier is still the placeholder. 0011 lists a real
   one as a requirement before the first release build.
+- 2026-10-02: the bundle identifier is now `com.andresvaldez.taproom`. The stale `ios/`
+  folder at the repo root, generated before the Expo project moved to `app/`, was
+  removed, and the local Supabase project ID is now `taproom`.

@@ -21,5 +21,12 @@ export const privyClientId = clientId;
  */
 export const skipSignIn = __DEV__ && process.env.EXPO_PUBLIC_SKIP_SIGN_IN === 'true';
 
+/**
+ * Whether the Apple button is offered. Development builds signed with a free
+ * Apple ID leave Sign in with Apple out (app.config.ts, docs/0019); release builds
+ * always offer it.
+ */
+export const appleSignInEnabled = !__DEV__ || process.env.EXPO_PUBLIC_APPLE_SIGN_IN !== 'false';
+
 /** BSC only. The embedded wallet defaults to the first chain listed. */
 export const privyChains = [bsc] as const;
