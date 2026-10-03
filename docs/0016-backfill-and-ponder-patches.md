@@ -102,3 +102,16 @@ another provider.
 - https://docs.nodereal.io/docs/compute-units-cus
 - https://docs.nodereal.io/reference/eth-getlogs-bnb-chain
 - https://www.quicknode.com/docs/bnb-smart-chain/eth_getLogs
+
+## Since then
+
+- 2026-10-02: the full backfill from 120,201,671 stopped at about block 121,380,000
+  (roughly 12 September). NodeReal returned "You've reached your monthly quota
+  limit" and Ponder shut down. By the request counts and the published prices,
+  the backfill had used a few million compute units, far below the 100M this
+  record gives for the free plan. Either the account's real limit is lower (one
+  secondary source says 10M) or calls are counted more heavily than the price
+  list says. The dashboard's usage figure is the one to trust. The estimates
+  above are wrong by at least that much. What was fetched stays in Ponder's
+  cache, so resuming does not fetch it again.
+
