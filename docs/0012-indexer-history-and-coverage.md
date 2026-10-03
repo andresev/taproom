@@ -157,3 +157,6 @@ With the indexer started at block 125,035,000 on the development RPC:
 - 2026-10-02: editing indexer files while `ponder dev` runs on PGlite stopped the
   indexer twice mid-sync ("PGlite is closed", then shutdown). Restarting resumes
   from Ponder's cache. Stop the dev indexer before larger edits.
+- 2026-10-02: the backfill blockers are resolved in 0016: a keyed NodeReal RPC, and
+  patches to Ponder that keep log requests filtered by address. The shard approach
+  under "Still open" does not work; 0016 explains why.

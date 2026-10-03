@@ -1,0 +1,76 @@
+diff --git a/node_modules/@ponder/utils/dist/index.cjs b/node_modules/@ponder/utils/dist/index.cjs
+index 0741023..8c84ea7 100644
+--- a/node_modules/@ponder/utils/dist/index.cjs
++++ b/node_modules/@ponder/utils/dist/index.cjs
+@@ -157,6 +157,23 @@ var getLogsRetryHelper = ({
+       };
+     }
+   }
++  // Taproom patch (docs/0016): NodeReal's limit counts blocks, so a range of
++  // 50,000 blocks is a toBlock - fromBlock of 49,999. Its message would match the
++  // rule below, which allows one block too many, so it is handled first.
++  match = sError.match(/exceed maximum block range: ([\d,.]+)/);
++  if (match !== null) {
++    const ranges = chunk({
++      params,
++      range: BigInt(match[1].replace(/[,.]/g, "")) - 1n
++    });
++    if (isRangeUnchanged(params, ranges) === false) {
++      return {
++        shouldRetry: true,
++        ranges,
++        isSuggestedRange: true
++      };
++    }
++  }
+   match = sError.match(/maximum block range: ([\d,.]+)/);
+   if (match !== null) {
+     const ranges = chunk({
+@@ -318,7 +335,8 @@ var getLogsRetryHelper = ({
+     sError.includes("Block range is too large") || // optimism
+     sError.includes("backend response too large") || // llamarpc, ankr, altitude
+     sError.includes("query exceeds max results") || // arbitrum
+-    /logs matched by query exceeds limit of \d+/.test(sError) || // zkevm
++    /logs matched by query exceeds limit of \d+/.test(sError) || // Taproom patch (docs/0016): NodeReal
++    /logs count exceeds the limit \d+/.test(sError) || // zkevm
+     /query returned more than \d+ results/.test(sError) || // 1rpc
+     /response size should not greater than \d+ bytes/.test(sError) || // drpc
+     /ranges over \d+ blocks are not supported on freetier/.test(sError)
+diff --git a/node_modules/@ponder/utils/dist/index.js b/node_modules/@ponder/utils/dist/index.js
+index b6a510d..6e69734 100644
+--- a/node_modules/@ponder/utils/dist/index.js
++++ b/node_modules/@ponder/utils/dist/index.js
+@@ -157,6 +157,23 @@ var getLogsRetryHelper = ({
+       };
+     }
+   }
++  // Taproom patch (docs/0016): NodeReal's limit counts blocks, so a range of
++  // 50,000 blocks is a toBlock - fromBlock of 49,999. Its message would match the
++  // rule below, which allows one block too many, so it is handled first.
++  match = sError.match(/exceed maximum block range: ([\d,.]+)/);
++  if (match !== null) {
++    const ranges = chunk({
++      params,
++      range: BigInt(match[1].replace(/[,.]/g, "")) - 1n
++    });
++    if (isRangeUnchanged(params, ranges) === false) {
++      return {
++        shouldRetry: true,
++        ranges,
++        isSuggestedRange: true
++      };
++    }
++  }
+   match = sError.match(/maximum block range: ([\d,.]+)/);
+   if (match !== null) {
+     const ranges = chunk({
+@@ -318,7 +335,8 @@ var getLogsRetryHelper = ({
+     sError.includes("Block range is too large") || // optimism
+     sError.includes("backend response too large") || // llamarpc, ankr, altitude
+     sError.includes("query exceeds max results") || // arbitrum
+-    /logs matched by query exceeds limit of \d+/.test(sError) || // zkevm
++    /logs matched by query exceeds limit of \d+/.test(sError) || // Taproom patch (docs/0016): NodeReal
++    /logs count exceeds the limit \d+/.test(sError) || // zkevm
+     /query returned more than \d+ results/.test(sError) || // 1rpc
+     /response size should not greater than \d+ bytes/.test(sError) || // drpc
+     /ranges over \d+ blocks are not supported on freetier/.test(sError)

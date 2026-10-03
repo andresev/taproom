@@ -51,9 +51,12 @@ npm run dev:app                          # Expo dev server
 The indexer registers Brew's standard and multi-pair launch factories. With
 `START_BLOCK` unset it starts at the chain head, so it sees only launches made after
 it starts and trades in those tokens. The standard factory was deployed at block
-120201671; full history from there needs an RPC that serves old logs, and has not
-been run yet (`docs/0012-indexer-history-and-coverage.md`). `GET /coverage` on the
-indexer says which factories are indexed and from which block.
+120201671. Indexing from there needs a keyed RPC that serves old logs (NodeReal's
+free plan works) and the Ponder patches in `patches/`, which `npm install` applies
+(`docs/0016-backfill-and-ponder-patches.md`). Following new blocks costs about
+12.5M NodeReal compute units a day, so stop the dev indexer when you are not using
+it. `GET /coverage` on the indexer says which factories are indexed and from which
+block.
 
 ## Everyday commands
 

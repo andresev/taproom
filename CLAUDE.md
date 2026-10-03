@@ -58,7 +58,7 @@ Each step has a first version. The record named beside it says what was built an
 
 These are the steps that serve the positioning. `docs/0011` has the reasoning.
 
-8. **Indexer history and coverage** — backfill from the standard factory's deployment block, and index the multi-pair factories. Partly built (`docs/0012`): the deployment blocks are confirmed, multi-pair v1 and v2 are indexed, and `GET /coverage` says which factories are indexed and from which block. The backfill has not been run: it needs an RPC that serves old logs, and a fix for how Ponder requests logs once a factory has 1,000 child contracts. The dividend factory waits on its open question. Steps 9 to 11 are only as good as this.
+8. **Indexer history and coverage** — backfill from the standard factory's deployment block, and index the multi-pair factories. Partly built (`docs/0012`): the deployment blocks are confirmed, multi-pair v1 and v2 are indexed, and `GET /coverage` says which factories are indexed and from which block. The backfill from deployment runs in development through a keyed NodeReal RPC and two patches to Ponder (`docs/0016`); production still needs an RPC plan and Postgres. The dividend factory waits on its open question. Steps 9 to 11 are only as good as this.
 9. **Trader records** — on the wallet screen, a wallet's entries, exits and results on Brew tokens, computed from the indexer (see Trader records). First version built (`docs/0013`); it states a partial period until step 8's backfill runs.
 10. **Checkable receipts** — a public link, and a QR code on the card, that re-renders the receipt from indexed data; and a list of the user's own receipts (see Receipts). Built: the list (Profile → Your receipts, `docs/0010`), and the indexer's public page at `/r/<trade id>` with its link and QR code on the card (`docs/0015`). Cards carry the link only once `EXPO_PUBLIC_RECEIPT_PAGE_URL` is set, which waits on the production domain.
 11. **Brew-specific safety inputs** — deployer record, launch-time holders, pair-asset risk and origin (see Safety model). First version built (`docs/0014`); deployer records are partial until step 8's backfill runs, and bundles are not detected.
@@ -68,7 +68,7 @@ These are the steps that serve the positioning. `docs/0011` has the reasoning.
 Requirements for a build that real users can fund. They are not where Taproom competes, so keep each one minimal.
 
 - **Key export** — a hard rule below, not built yet.
-- **Sell** — a user who bought in the app must be able to sell in the app, through the same review step as a buy. `docs/0008` left selling out.
+- **Sell** — a user who bought in the app must be able to sell in the app, through the same review step as a buy. Built (`docs/0017`), BNB-paired tokens only like the buy; not yet run with a real wallet.
 - **Portfolio tab** — the user's own holdings. A placeholder today.
 - **Error reporting** — Sentry is not installed (see Stack).
 - **App identity** — a real bundle identifier in place of the placeholder `com.anonymous.social-trading`. Apple sign-in does not work without one (`docs/0007`).
@@ -86,7 +86,7 @@ Check `package.json` first. If the repo already uses a library for a job, follow
 - **Wallet:** an embedded self-custodial wallet from **Privy** (the provider Fomo uses), with **viem**. `viem` is pinned to 2.56.0 in the app and the indexer, the version Privy's SDK requires; do not bump it on its own. Check current Privy docs for Expo setup and BSC support; don't rely on memory. The earlier Reown AppKit (WalletConnect) flow has been removed from the app's code; its packages remain installed until the external-wallet question below is settled.
 - **Server data:** TanStack Query. **Client state:** Zustand. Keep both thin.
 - **Styling:** React Native `StyleSheet` with the theme tokens in `app/src/theme` (`docs/0001`). Do not add NativeWind.
-- **Indexer:** separate TypeScript service in `/indexer`, built on Ponder: PGlite in development, Postgres when `DATABASE_URL` is set. It indexes Brew launches, PancakeSwap V3 swaps in Brew pools and Brew token transfers on BSC, and serves GraphQL plus the `/activity`, `/safety` and `/coverage` routes. Anything that needs a server-side RPC key goes in its API routes.
+- **Indexer:** separate TypeScript service in `/indexer`, built on Ponder: PGlite in development, Postgres when `DATABASE_URL` is set. Ponder is patched (`patches/`, applied by `patch-package` on install) to keep its log requests filtered by address; check the patches on any Ponder upgrade (`docs/0016`). It indexes Brew launches, PancakeSwap V3 swaps in Brew pools and Brew token transfers on BSC, and serves GraphQL plus the `/activity`, `/safety` and `/coverage` routes. Anything that needs a server-side RPC key goes in its API routes.
 - **App backend:** Supabase (Postgres, auth, realtime) for profiles, follows, and push tokens, plus the `privy-session` edge function that turns a Privy sign-in into a Supabase session. On-chain data stays in the indexer's database. The feed polls every 10 seconds in v1; switch to realtime once it works.
 - **Share images:** `react-native-view-shot` + `expo-sharing`.
 - **Errors/telemetry:** Sentry on mobile; structured JSON logs in the indexer. Every feed query, quote, and swap should be traceable. Sentry is **not installed yet** (`docs/0008`): it is a requirement before the first release build, and adding it follows "ask before adding a dependency".
@@ -216,7 +216,7 @@ A trader record is what a wallet did on Brew tokens: its entries, its exits, and
 - **Languages:** Brew's own site ships Chinese and Japanese (checked 2026-10-02). Taproom v1 is English-only, and Chinese is listed as v2 above; whether that still holds is undecided.
 - **Launchpad dependency:** whether Taproom stays Brew-only. See Positioning.
 - **Brew facts still unconfirmed:** the liquidity locker contracts, and the address of the older multi-pair v2 deployment.
-- **Backfill:** which keyed RPC provider to use, and how to keep Ponder's log requests filtered by address past 1,000 child contracts (`docs/0012`).
+- **Production RPC:** NodeReal's free plan covers the backfill and about eight days of following new blocks (`docs/0016`, measured 12.5M compute units a day). Production needs its paid plan or another provider.
 - **Multi-pair tokens in the app:** which of a token's pools the token page prices and the buy flow trades through. Today it is whichever the indexer returns first.
 - Taproom token: name, ticker, and mechanics are not final. Planned direction: holding unlocks pro features; in-app launch fees paid in the token are burned; season rewards are cosmetics or fee discounts. Rewards must not pay users for inviting or posting (Apple 3.1.5(v)). Do not build token features in v1.
 

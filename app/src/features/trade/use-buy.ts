@@ -1,13 +1,13 @@
 import { useEmbeddedEthereumWallet } from '@privy-io/expo';
-import { ADDRESSES, BSC_CHAIN_ID, type Address, type TxHash } from '@repo/shared';
+import { ADDRESSES, type Address, type TxHash } from '@repo/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createWalletClient, custom, getAddress, numberToHex } from 'viem';
-import { bsc } from 'viem/chains';
+import { getAddress } from 'viem';
 
 import { pancakeSwapRouterAbi } from '@/lib/chain/abis/pancake-swap-router';
 import { publicClient } from '@/lib/chain/clients';
 
 import { buildBuyParams } from './buy';
+import { embeddedWalletClient } from './embedded-wallet';
 
 /** The signed-in user's embedded wallet address, or null when there is none (signed out, or still loading). */
 export function useWalletAddress(): Address | null {
@@ -49,12 +49,7 @@ export function useBuy() {
 
   return useMutation({
     mutationFn: async ({ token, fee, amountIn, amountOutMinimum }: BuyRequest): Promise<TxHash> => {
-      const wallet = wallets.at(0);
-      if (!wallet) throw new Error('Sign in to buy.');
-      const account = getAddress(wallet.address);
-
-      const provider = await wallet.getProvider();
-      await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: numberToHex(BSC_CHAIN_ID) }] });
+      const { account, client } = await embeddedWalletClient(wallets, 'buy');
 
       const params = buildBuyParams({
         wbnb: ADDRESSES.wbnb,
@@ -74,8 +69,7 @@ export function useBuy() {
         value: amountIn,
       });
 
-      const walletClient = createWalletClient({ account, chain: bsc, transport: custom(provider) });
-      const hash = await walletClient.writeContract(request);
+      const hash = await client.writeContract(request);
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
       if (receipt.status !== 'success') throw new Error('The swap reverted. Your BNB was not exchanged.');
       return hash;

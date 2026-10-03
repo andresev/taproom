@@ -1,0 +1,40 @@
+diff --git a/node_modules/ponder/dist/esm/internal/options.js b/node_modules/ponder/dist/esm/internal/options.js
+index 48c974b..73c6e3d 100644
+--- a/node_modules/ponder/dist/esm/internal/options.js
++++ b/node_modules/ponder/dist/esm/internal/options.js
+@@ -55,7 +55,11 @@ export const buildOptions = ({ cliOptions }) => {
+         maxThreads: process.env.PONDER_MAX_THREADS !== undefined
+             ? Number(process.env.PONDER_MAX_THREADS)
+             : 4,
+-        factoryAddressCountThreshold: 1_000,
++        // Taproom patch (docs/0016): keep filtering eth_getLogs by address for
++        // factories with many children. Without it, past 1,000 children Ponder
++        // requests every log with the event's signature across the whole chain.
++        // Long address lists are split in sync-historical/index.js instead.
++        factoryAddressCountThreshold: 100_000,
+         rpcMaxConcurrency: 256,
+         // v8.getHeapStatistics().heap_size_limit / 5, rounded up to the nearest 64 MB
+         indexingCacheMaxBytes: process.env.PONDER_CACHE_BYTES !== undefined
+diff --git a/node_modules/ponder/dist/esm/sync-historical/index.js b/node_modules/ponder/dist/esm/sync-historical/index.js
+index 535141d..626bb8a 100644
+--- a/node_modules/ponder/dist/esm/sync-historical/index.js
++++ b/node_modules/ponder/dist/esm/sync-historical/index.js
+@@ -29,6 +29,18 @@ export const createHistoricalSync = (args) => {
+      */
+     const syncLogsDynamic = async (params, context) => {
+         const { address, topics } = params;
++        // Taproom patch (docs/0016): providers cap the addresses one eth_getLogs
++        // may filter on (NodeReal: 1,000), and merged factory filters can list
++        // more. Split the list and fetch each part over the same blocks.
++        const MAX_ADDRESSES_PER_REQUEST = 1_000;
++        if (Array.isArray(address) && address.length > MAX_ADDRESSES_PER_REQUEST) {
++            const parts = [];
++            for (let i = 0; i < address.length; i += MAX_ADDRESSES_PER_REQUEST) {
++                parts.push(address.slice(i, i + MAX_ADDRESSES_PER_REQUEST));
++            }
++            const logs = await Promise.all(parts.map((part) => syncLogsDynamic({ ...params, address: part }, context)));
++            return logs.flat();
++        }
+         const intervals = getChunks({
+             interval: [
+                 hexToNumber(params.fromBlock),

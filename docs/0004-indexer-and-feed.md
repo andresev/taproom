@@ -93,3 +93,4 @@ launched token of one pool and the pair token of another.
 - 2026-10-02: 0012 confirmed the standard factory's deployment block (120,201,671)
   and added the multi-pair v1 and v2 factories to the indexer. The backfill itself
   has not been run, so "No history yet" above still holds.
+- 2026-10-02: the backfill from the deployment block runs in development (0016).

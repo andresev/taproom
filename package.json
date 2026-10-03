@@ -21,9 +21,11 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:migration": "supabase migration new",
-    "test:functions": "vitest run --dir supabase/functions"
+    "test:functions": "vitest run --dir supabase/functions",
+    "postinstall": "patch-package"
   },
   "devDependencies": {
+    "patch-package": "^8.0.1",
     "supabase": "^2.118.0",
     "typescript": "~6.0.3"
   }
