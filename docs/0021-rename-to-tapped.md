@@ -27,6 +27,8 @@ positioning goal and is not a release requirement.
   | Root package name | `taproom` | `tapped` |
   | Local Supabase project ID | `taproom` | `tapped` |
 
+- **The repo folder is `~/Dev/tapped`,** renamed from `~/Dev/taproom` the same day.
+  Its remote is still named for the old one (see below).
 - **Every document uses the new name,** at the owner's request: `CLAUDE.md`, the
   READMEs and all earlier decision records, including their identifiers and the
   file name of 0001. This is an exception to "add a dated line, do not rewrite":
@@ -37,8 +39,8 @@ positioning goal and is not a release requirement.
 
 ## What still says Taproom
 
-- **The repo folder,** `~/Dev/taproom`, and any remote repository name. Renaming
-  them is the owner's to do.
+- **The remote repository,** `github.com/andresev/taproom`. Renaming it is the
+  owner's to do, in the repository's settings on GitHub.
 - **Git history** before this change.
 - **This record.**
 

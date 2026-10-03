@@ -14,7 +14,7 @@ That loop is not what makes Tapped different: larger apps already offer it on BS
 
 Tapped is an **independent, community-built app. It is not affiliated with or endorsed by Brew.** Never use Brew's logo or imply official status in UI, copy, or metadata.
 
-The app was called Taproom until 2026-10-03 (`docs/0021-rename-to-tapped.md`). Every document now uses the new name; only that record, git history and the repo folder (`~/Dev/taproom`) keep the old one.
+The app was called Taproom until 2026-10-03 (`docs/0021-rename-to-tapped.md`). Every document now uses the new name; only that record and git history keep the old one. The repo folder is `~/Dev/tapped`.
 
 ### Brew context (domain knowledge)
 - Brew is a token launchpad on BSC, live since early September 2026. Tokens launch directly into **PancakeSwap V3** pools with **permanently locked liquidity** (no bonding curve).
